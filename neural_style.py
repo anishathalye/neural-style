@@ -32,51 +32,34 @@ def main():
     content_image = imread(content_path)
     style_image = imread(style_path)
 
-    if width <= 0:
-        width = content_image.shape[1]
-
-    content_aspect = (float(content_image.shape[0]) /
-            content_image.shape[1]) # height / width
-    new_shape = (int(math.floor(float(content_image.shape[0]) /
-            content_image.shape[1] * width)), width)
-    content_image = sm.imresize(content_image, new_shape)
-    style_aspect = (float(style_image.shape[0]) /
-            style_image.shape[1])
+    if width > 0:
+        new_shape = (int(math.floor(float(content_image.shape[0]) /
+                content_image.shape[1] * width)), width)
+        content_image = sm.imresize(content_image, new_shape)
     if style_scale > 0:
-        style_image_scaled = sm.imresize(style_image, style_scale)
-        shape = style_image_scaled.shape
-        if shape[0] >= new_shape[0] and shape[1] >= new_shape[1]:
-            style_image = style_image_scaled
-        else:
-            style_scale = -1
-    if style_scale <= 0:
-        matched_height = int(math.ceil(new_shape[1] * style_aspect))
-        if matched_height >= new_shape[0]:
-            style_image = sm.imresize(style_image, (matched_height, new_shape[1]))
-        else:
-            matched_width = int(math.ceil(new_shape[0] / style_aspect))
-            style_image = sm.imresize(style_image, (new_shape[0], matched_width))
-    style_image = style_image[0:new_shape[0], 0:new_shape[1], :]
-    assert content_image.shape == style_image.shape
+        style_image = sm.imresize(style_image, style_scale)
 
     shape = (1,) + content_image.shape
+    style_shape = (1,) + style_image.shape
 
     content_features = {}
     style_features = {}
     g = tf.Graph()
-    with g.as_default():
+    with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
         image = tf.placeholder('float', shape=shape)
         net, mean_pixel = vgg.net(VGG_PATH, image)
+        content_pre = np.array([vgg.preprocess(content_image, mean_pixel)])
+        content_features[CONTENT_LAYER] = net[CONTENT_LAYER].eval(
+                feed_dict={image: content_pre})
 
-        with tf.Session() as sess:
-            content_pre = np.array([vgg.preprocess(content_image, mean_pixel)])
-            content_features[CONTENT_LAYER] = net[CONTENT_LAYER].eval(
-                    feed_dict={image: content_pre})
-
-            style_pre = np.array([vgg.preprocess(style_image, mean_pixel)])
-            for layer in STYLE_LAYERS:
-                style_features[layer] = net[layer].eval(
-                        feed_dict={image: style_pre})
+    g = tf.Graph()
+    with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
+        image = tf.placeholder('float', shape=style_shape)
+        net, _ = vgg.net(VGG_PATH, image)
+        style_pre = np.array([vgg.preprocess(style_image, mean_pixel)])
+        for layer in STYLE_LAYERS:
+            style_features[layer] = net[layer].eval(
+                    feed_dict={image: style_pre})
 
     g = tf.Graph()
     with g.as_default():
@@ -114,7 +97,7 @@ def main():
 
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
-            for i in range(10000):
+            for i in range(100000):
                 print 'i = %d' % i
                 imsave('%05d.jpg' % i, vgg.unprocess(
                         image.eval().reshape(shape[1:]), mean_pixel))
