@@ -58,8 +58,10 @@ def main():
         net, _ = vgg.net(VGG_PATH, image)
         style_pre = np.array([vgg.preprocess(style_image, mean_pixel)])
         for layer in STYLE_LAYERS:
-            style_features[layer] = net[layer].eval(
-                    feed_dict={image: style_pre})
+            features = net[layer].eval(feed_dict={image: style_pre})
+            features = np.reshape(features, (-1, features.shape[3]))
+            grammatrix = np.matmul(features.T, features)
+            style_features[layer] = grammatrix
 
     g = tf.Graph()
     with g.as_default():
@@ -80,11 +82,9 @@ def main():
             feats = tf.reshape(layer, (-1, number))
             gram = tf.matmul(tf.transpose(feats), feats)
 
-            match = style_features[i]
-            match_feats = np.reshape(match, (-1, match.shape[3]))
-            match_gram = np.matmul(match_feats.T, match_feats)
+            style_gram = style_features[i]
 
-            style_losses.append(tf.nn.l2_loss(gram - match_gram) /
+            style_losses.append(tf.nn.l2_loss(gram - style_gram) /
                     (4.0 * number ** 2 * (height * width) ** 2))
         style_loss = reduce(tf.add, style_losses) / len(style_losses)
         loss = ALPHA * content_loss + BETA * style_loss
