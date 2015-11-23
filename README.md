@@ -16,7 +16,7 @@ image (and then cropped).
 ## Example
 
 Running it for 500-2000 iterations seems to produce nice results (using the
-ADAM optimizer).
+[Adam optimizer][adam]).
 
 The following example was run for 1000 iterations to produce the result:
 
@@ -43,4 +43,5 @@ Copyright (c) 2015 Anish Athalye. Released under GPLv3. See
 
 [net]: http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
 [paper]: http://arxiv.org/pdf/1508.06576v2.pdf
+[adam]: http://arxiv.org/abs/1412.6980
 [license]: LICENSE.txt
