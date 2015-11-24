@@ -16,6 +16,7 @@ BETA = 1e4 # weight of style loss
 LEARNING_RATE_INITIAL = 2e1
 LEARNING_DECAY_BASE = 0.94
 LEARNING_DECAY_STEPS = 100
+TV_WEIGHT = 1e-3
 
 def imread(path):
     return sm.imread(path).astype(np.float)
@@ -60,8 +61,8 @@ def main():
         for layer in STYLE_LAYERS:
             features = net[layer].eval(feed_dict={image: style_pre})
             features = np.reshape(features, (-1, features.shape[3]))
-            grammatrix = np.matmul(features.T, features)
-            style_features[layer] = grammatrix
+            gram = np.matmul(features.T, features) / (features.size)
+            style_features[layer] = gram
 
     g = tf.Graph()
     with g.as_default():
@@ -79,15 +80,15 @@ def main():
         for i in STYLE_LAYERS:
             layer = net[i]
             _, height, width, number = map(lambda i: i.value, layer.get_shape())
+            size = height * width * number
             feats = tf.reshape(layer, (-1, number))
-            gram = tf.matmul(tf.transpose(feats), feats)
-
+            gram = tf.matmul(tf.transpose(feats), feats) / (size)
             style_gram = style_features[i]
-
-            style_losses.append(tf.nn.l2_loss(gram - style_gram) /
-                    (4.0 * number ** 2 * (height * width) ** 2))
+            style_losses.append(tf.nn.l2_loss(gram - style_gram))
         style_loss = reduce(tf.add, style_losses) / len(style_losses)
-        loss = ALPHA * content_loss + BETA * style_loss
+        tv_loss = (tf.nn.l2_loss(image[:,1:,:,:] - image[:,:shape[1]-1,:,:]) +
+                tf.nn.l2_loss(image[:,:,1:,:] - image[:,:,:shape[2]-1,:]))
+        loss = ALPHA * content_loss + BETA * style_loss + TV_WEIGHT * tv_loss
 
         learning_rate = tf.train.exponential_decay(LEARNING_RATE_INITIAL,
                 global_step, LEARNING_DECAY_STEPS, LEARNING_DECAY_BASE,
