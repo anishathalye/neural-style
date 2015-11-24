@@ -13,9 +13,7 @@ STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 NOISE_RATIO = 0.0
 ALPHA = 1.0 # weight of content loss
 BETA = 1e4 # weight of style loss
-LEARNING_RATE_INITIAL = 2e1
-LEARNING_DECAY_BASE = 0.94
-LEARNING_DECAY_STEPS = 100
+LEARNING_RATE = 2e1
 TV_WEIGHT = 1e-3
 
 def imread(path):
@@ -66,7 +64,6 @@ def main():
 
     g = tf.Graph()
     with g.as_default():
-        global_step = tf.Variable(0, trainable=False)
         noise = np.random.normal(size=shape, scale=np.std(content_image) * 0.1)
         content_pre = vgg.preprocess(content_image, mean_pixel)
         init = content_pre * (1 - NOISE_RATIO) + noise * NOISE_RATIO
@@ -90,11 +87,7 @@ def main():
                 tf.nn.l2_loss(image[:,:,1:,:] - image[:,:,:shape[2]-1,:]))
         loss = ALPHA * content_loss + BETA * style_loss + TV_WEIGHT * tv_loss
 
-        learning_rate = tf.train.exponential_decay(LEARNING_RATE_INITIAL,
-                global_step, LEARNING_DECAY_STEPS, LEARNING_DECAY_BASE,
-                staircase=True)
-        train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss,
-                global_step=global_step)
+        train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(loss)
 
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
