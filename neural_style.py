@@ -10,11 +10,10 @@ import math
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 CONTENT_LAYER = 'relu4_2'
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
-NOISE_RATIO = 0.0
-ALPHA = 1.0 # weight of content loss
-BETA = 1e4 # weight of style loss
-LEARNING_RATE = 2e1
-TV_WEIGHT = 1e-3
+ALPHA = 5e0 # weight of content loss
+BETA = 1e2 # weight of style loss
+TV_WEIGHT = 1e-3 # total variation regularization weight
+LEARNING_RATE = 1e1 # adam learning rate
 
 def imread(path):
     return sm.imread(path).astype(np.float)
@@ -62,12 +61,9 @@ def main():
             gram = np.matmul(features.T, features) / (features.size)
             style_features[layer] = gram
 
-    g = tf.Graph()
-    with g.as_default():
+    with tf.Graph().as_default():
         noise = np.random.normal(size=shape, scale=np.std(content_image) * 0.1)
-        content_pre = vgg.preprocess(content_image, mean_pixel)
-        init = content_pre * (1 - NOISE_RATIO) + noise * NOISE_RATIO
-        init = init.astype('float32')
+        init = tf.random_normal(shape) * 256 / 1000
         image = tf.Variable(init)
         net, _ = vgg.net(VGG_PATH, image)
 
@@ -93,6 +89,11 @@ def main():
             sess.run(tf.initialize_all_variables())
             for i in range(100000):
                 print 'i = %d' % i
+                if i % 10 == 0:
+                    print '\tcontent_loss = %15.0f' % content_loss.eval()
+                    print '\tstyle_loss   = %15.0f' % style_loss.eval()
+                    print '\ttv_loss      = %15.0f' % tv_loss.eval()
+                    print '\tloss         = %15.0f' % loss.eval()
                 imsave('%05d.jpg' % i, vgg.unprocess(
                         image.eval().reshape(shape[1:]), mean_pixel))
                 train_step.run()
