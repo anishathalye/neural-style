@@ -19,15 +19,9 @@ to get it to operate at the same speed as other implementations.
 
 ## Running
 
-`python neural_style.py <content file> <style file> <output width> <style scale factor>`
+`python neural_style.py --content <content file> --style <style file> --output <output file>`
 
-(The CLI could use some work... I'll fix it soon.)
-
-If the width is set to -1, the output image is the same size as the content
-image.
-
-If the style scale factor is set to -1, the style image is scaled to the output
-image (and then cropped).
+(run `python neural_style.py --help` to see a list of all options)
 
 ## Example
 

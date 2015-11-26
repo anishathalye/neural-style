@@ -21,14 +21,6 @@ def _add_layer(input_image, layers, func):
         new = func(layers[-1])
     layers.append(new)
 
-def preprocess(image, mean_pixel):
-    return image - mean_pixel
-
-def unprocess(image, mean_pixel):
-    image = image + mean_pixel
-    return image
-
-
 def net(data_path, input_image):
     layers = [
         'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
@@ -72,3 +64,10 @@ def net(data_path, input_image):
     assert len(layers) == len(net)
 
     return dict(zip(layers, net)), mean_pixel
+
+def preprocess(image, mean_pixel):
+    return image - mean_pixel
+
+def unprocess(image, mean_pixel):
+    image = image + mean_pixel
+    return image
