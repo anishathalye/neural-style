@@ -63,14 +63,20 @@ def stylize(network, initial, content, style, iterations,
 
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
+
         with tf.Session() as sess:
+            def print_progress(i, last=False):
+                if print_iter is not None:
+                    if i is not None and i % print_iter == 0 or last:
+                        print '  content loss: %g' % (content_loss.eval())
+                        print '    style loss: %g' % (style_loss.eval())
+                        print '       tv loss: %g' % (tv_loss.eval())
+                        print '    total loss: %g' % loss.eval()
+
             sess.run(tf.initialize_all_variables())
             for i in range(iterations):
-                if print_iter is not None and i % print_iter == 0:
-                    print '  content loss: %g' % (content_loss.eval())
-                    print '    style loss: %g' % (style_loss.eval())
-                    print '       tv loss: %g' % (tv_loss.eval())
-                    print '    total loss: %g' % loss.eval()
+                print_progress(i)
                 print 'Iteration %d/%d' % (i + 1, iterations)
                 train_step.run()
+                print_progress(None, i == iterations - 1)
             return vgg.unprocess(image.eval().reshape(shape[1:]), mean_pixel)
