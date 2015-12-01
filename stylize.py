@@ -55,7 +55,7 @@ def stylize(network, initial, content, style, iterations,
             gram = tf.matmul(tf.transpose(feats), feats) / (size)
             style_gram = style_features[i]
             style_losses.append(2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
-        style_loss = style_weight * reduce(tf.add, style_losses) / len(style_losses)
+        style_loss = style_weight * reduce(tf.add, style_losses)
         tv_loss = tv_weight * (tf.nn.l2_loss(image[:,1:,:,:] - image[:,:shape[1]-1,:,:]) +
                 tf.nn.l2_loss(image[:,:,1:,:] - image[:,:,:shape[2]-1,:]))
         loss = content_loss + style_loss + tv_loss
