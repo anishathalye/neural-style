@@ -8,10 +8,10 @@ from argparse import ArgumentParser
 
 # defaults
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
-CONTENT_WEIGHT = 5e0 # weight of content loss
-STYLE_WEIGHT = 1e2 # weight of style loss
-TV_WEIGHT = 1e-3 # total variation regularization weight
-LEARNING_RATE = 1e1 # adam learning rate
+CONTENT_WEIGHT = 5e0
+STYLE_WEIGHT = 1e2
+TV_WEIGHT = 1e2
+LEARNING_RATE = 1e1
 ITERATIONS = 1000
 
 def build_parser():
