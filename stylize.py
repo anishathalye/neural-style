@@ -43,8 +43,9 @@ def stylize(network, initial, content, style, iterations,
         image = tf.Variable(initial)
         net, _ = vgg.net(network, image)
 
-        content_loss = tf.nn.l2_loss(
-                net[CONTENT_LAYER] - content_features[CONTENT_LAYER])
+        content_loss = content_weight * (2 * tf.nn.l2_loss(
+                net[CONTENT_LAYER] - content_features[CONTENT_LAYER]) /
+                content_features[CONTENT_LAYER].size)
         style_losses = []
         for i in STYLE_LAYERS:
             layer = net[i]
@@ -53,12 +54,11 @@ def stylize(network, initial, content, style, iterations,
             feats = tf.reshape(layer, (-1, number))
             gram = tf.matmul(tf.transpose(feats), feats) / (size)
             style_gram = style_features[i]
-            style_losses.append(tf.nn.l2_loss(gram - style_gram))
-        style_loss = reduce(tf.add, style_losses) / len(style_losses)
-        tv_loss = (tf.nn.l2_loss(image[:,1:,:,:] - image[:,:shape[1]-1,:,:]) +
+            style_losses.append(2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+        style_loss = style_weight * reduce(tf.add, style_losses) / len(style_losses)
+        tv_loss = tv_weight * (tf.nn.l2_loss(image[:,1:,:,:] - image[:,:shape[1]-1,:,:]) +
                 tf.nn.l2_loss(image[:,:,1:,:] - image[:,:,:shape[2]-1,:]))
-        loss = content_weight * content_loss + \
-            style_weight * style_loss + tv_weight * tv_loss
+        loss = content_loss + style_loss + tv_loss
 
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
