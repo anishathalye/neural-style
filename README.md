@@ -23,7 +23,9 @@ seems to be around 3x slower than implementations using Torch.
 
 ## Example
 
-Running it for 500-1000 iterations seems to produce nice results.
+Running it for 500-2000 iterations seems to produce nice results. With certain
+images or output sizes, you might need some hyperparameter tuning (especially
+`--content-weight`, `--style-weight`, and `--learning-rate`).
 
 The following example was run for 1000 iterations to produce the result (with
 default parameters):
@@ -47,7 +49,7 @@ These were the input images used (me sleeping at a hackathon and Starry Night):
 ## License
 
 Copyright (c) 2015 Anish Athalye. Released under GPLv3. See
-[LICENSE.md][license] for details.
+[LICENSE.txt][license] for details.
 
 [net]: http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
 [paper]: http://arxiv.org/pdf/1508.06576v2.pdf
