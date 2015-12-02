@@ -12,6 +12,7 @@ CONTENT_WEIGHT = 5e0
 STYLE_WEIGHT = 1e2
 TV_WEIGHT = 1e2
 LEARNING_RATE = 1e1
+STYLE_SCALE = 1.0
 ITERATIONS = 1000
 
 def build_parser():
@@ -33,7 +34,7 @@ def build_parser():
             metavar='WIDTH')
     parser.add_argument('--style-scale', type=float,
             dest='style_scale', help='style scale',
-            metavar='STYLE_SCALE')
+            metavar='STYLE_SCALE', default=STYLE_SCALE)
     parser.add_argument('--network',
             dest='network', help='path to network parameters',
             metavar='VGG_PATH', default=VGG_PATH)
@@ -70,8 +71,9 @@ def main():
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                 content_image.shape[1] * width)), width)
         content_image = sm.imresize(content_image, new_shape)
-    if style_scale is not None:
-        style_image = sm.imresize(style_image, style_scale)
+    target_shape = content_image.shape
+    style_image = sm.imresize(style_image, style_scale * target_shape[1] /
+            style_image.shape[1])
 
     initial = options.initial
     if initial is not None:
