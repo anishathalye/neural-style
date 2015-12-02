@@ -21,7 +21,7 @@ seems to be around 3x slower than implementations using Torch.
 
 (run `python neural_style.py --help` to see a list of all options)
 
-## Example
+## Example 1
 
 Running it for 500-2000 iterations seems to produce nice results. With certain
 images or output sizes, you might need some hyperparameter tuning (especially
@@ -37,6 +37,25 @@ These were the input images used (me sleeping at a hackathon and Starry Night):
 ![input-content](examples/1-content.jpg)
 
 ![input-style](examples/1-style.jpg)
+
+## Example 2
+
+The following example demonstrates style blending, and was run for 1000
+iterations to produce the result (with style blend weight parameters 0.8 and
+0.2):
+
+![output](examples/2-output.jpg)
+
+The content input image was a picture of the Stata Center at MIT:
+
+![input-content](examples/2-content.jpg)
+
+The style input images were Picasso's "Dora Maar" and Starry Night, with the
+Picasso image having a style blend weight of 0.8 and Starry Night having a
+style blend weight of 0.2:
+
+![input-style](examples/2-style1.jpg)
+![input-style](examples/2-style2.jpg)
 
 ## Requirements
 
