@@ -22,7 +22,8 @@ def build_parser():
             dest='content', help='content image',
             metavar='CONTENT', required=True)
     parser.add_argument('--style',
-            dest='style', help='style image',
+            dest='styles',
+            nargs='+', help='one or more style images',
             metavar='STYLE', required=True)
     parser.add_argument('--output',
             dest='output', help='output path',
@@ -33,9 +34,10 @@ def build_parser():
     parser.add_argument('--width', type=int,
             dest='width', help='output width',
             metavar='WIDTH')
-    parser.add_argument('--style-scale', type=float,
-            dest='style_scale', help='style scale',
-            metavar='STYLE_SCALE', default=STYLE_SCALE)
+    parser.add_argument('--style-scales', type=float,
+            dest='style_scales',
+            nargs='+', help='one or more style scales',
+            metavar='STYLE_SCALE')
     parser.add_argument('--network',
             dest='network', help='path to network parameters',
             metavar='VGG_PATH', default=VGG_PATH)
@@ -45,6 +47,9 @@ def build_parser():
     parser.add_argument('--style-weight', type=float,
             dest='style_weight', help='style weight',
             metavar='STYLE_WEIGHT', default=STYLE_WEIGHT)
+    parser.add_argument('--style-blend-weights', type=float,
+            dest='style_blend_weights', help='style blending weights',
+            nargs='+', metavar='STYLE_BLEND_WEIGHT')
     parser.add_argument('--tv-weight', type=float,
             dest='tv_weight', help='total variation regularization weight',
             metavar='TV_WEIGHT', default=TV_WEIGHT)
@@ -68,7 +73,10 @@ def main():
     options = parser.parse_args()
 
     content_image = imread(options.content)
-    style_image = imread(options.style)
+    num_styles = len(options.styles)
+    style_images = []
+    for i in range(0,num_styles):
+        style_images.append(imread(options.styles[i]))
 
     width = options.width
     if width is not None:
@@ -76,20 +84,30 @@ def main():
                 content_image.shape[1] * width)), width)
         content_image = scipy.misc.imresize(content_image, new_shape)
     target_shape = content_image.shape
-    style_image = scipy.misc.imresize(style_image, options.style_scale *
-            target_shape[1] / style_image.shape[1])
+    for i in range(0,num_styles):
+        style_scale = STYLE_SCALE
+        if options.style_scales != None:
+            style_scale = options.style_scales[i]
+        style_images[i] = scipy.misc.imresize(style_images[i], style_scale *
+                target_shape[1] / style_images[i].shape[1])
+
+    style_blend_weights = options.style_blend_weights
+    if style_blend_weights == None:
+        style_blend_weights = []
+        # default is equal weights
+        for i in range(0,num_styles):
+            style_blend_weights.append(1.0/num_styles)
 
     initial = options.initial
     if initial is not None:
         initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
 
-    image = stylize(options.network, initial, content_image, style_image,
-            options.iterations, options.content_weight, options.style_weight,
+    image = stylize(options.network, initial, content_image, style_images,
+            options.iterations, options.content_weight, options.style_weight, style_blend_weights,
             options.tv_weight, options.learning_rate,
             print_iterations=options.print_iterations,
             checkpoint_iterations=options.checkpoint_iterations)
     imsave(options.output, image)
-
 
 def imread(path):
     return scipy.misc.imread(path).astype(np.float)
@@ -98,7 +116,6 @@ def imread(path):
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
     scipy.misc.imsave(path, img)
-
 
 if __name__ == '__main__':
     main()
