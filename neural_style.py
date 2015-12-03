@@ -1,19 +1,20 @@
 from stylize import *
 
 import numpy as np
-import scipy.misc as sm
+import scipy.misc
 
 import math
 from argparse import ArgumentParser
 
-# defaults
-VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
+# default arguments
 CONTENT_WEIGHT = 5e0
 STYLE_WEIGHT = 1e2
 TV_WEIGHT = 1e2
 LEARNING_RATE = 1e1
 STYLE_SCALE = 1.0
 ITERATIONS = 1000
+VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
+
 
 def build_parser():
     parser = ArgumentParser()
@@ -53,43 +54,47 @@ def build_parser():
     parser.add_argument('--initial',
             dest='initial', help='initial image',
             metavar='INITIAL')
-    parser.add_argument('--print-iter', type=int,
-            dest='print_iter', help='print statistics after these many iterations',
+    parser.add_argument('--print-iterations', type=int,
+            dest='print_iter', help='statistics printing frequency',
             metavar='PRINT_ITER')
     return parser
+
 
 def main():
     parser = build_parser()
     options = parser.parse_args()
-    width = options.width
-    style_scale = options.style_scale
 
     content_image = imread(options.content)
     style_image = imread(options.style)
 
+    width = options.width
     if width is not None:
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                 content_image.shape[1] * width)), width)
-        content_image = sm.imresize(content_image, new_shape)
+        content_image = scipy.misc.imresize(content_image, new_shape)
     target_shape = content_image.shape
-    style_image = sm.imresize(style_image, style_scale * target_shape[1] /
-            style_image.shape[1])
+    style_image = scipy.misc.imresize(style_image, options.style_scale *
+            target_shape[1] / style_image.shape[1])
 
     initial = options.initial
     if initial is not None:
-        initial = sm.imresize(imread(initial), content_image.shape[:2])
+        initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
 
     image = stylize(options.network, initial, content_image, style_image,
             options.iterations, options.content_weight, options.style_weight,
-            options.tv_weight, options.learning_rate, print_iter=options.print_iter)
+            options.tv_weight, options.learning_rate,
+            print_iter=options.print_iter)
     imsave(options.output, image)
 
+
 def imread(path):
-    return sm.imread(path).astype(np.float)
+    return scipy.misc.imread(path).astype(np.float)
+
 
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
-    sm.imsave(path, img)
+    scipy.misc.imsave(path, img)
+
 
 if __name__ == '__main__':
     main()

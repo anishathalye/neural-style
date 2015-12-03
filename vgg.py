@@ -1,28 +1,10 @@
 import tensorflow as tf
 import numpy as np
-import scipy.io as sio
+import scipy.io
 
-def _conv_layer(weights, bias):
-    def _make_layer(input):
-        conv = tf.nn.conv2d(input, tf.constant(weights), strides=[1, 1, 1, 1],
-                padding='SAME')
-        return tf.nn.bias_add(conv, bias)
-    return _make_layer
-
-def _pool_layer():
-    def _make_layer(input):
-        return tf.nn.max_pool(input, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
-    return _make_layer
-
-def _add_layer(input_image, layers, func):
-    if not layers:
-        new = func(input_image)
-    else:
-        new = func(layers[-1])
-    layers.append(new)
 
 def net(data_path, input_image):
-    layers = [
+    layers = (
         'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
 
         'conv2_1', 'relu2_1', 'conv2_2', 'relu2_2', 'pool2',
@@ -35,39 +17,48 @@ def net(data_path, input_image):
 
         'conv5_1', 'relu5_1', 'conv5_2', 'relu5_2', 'conv5_3',
         'relu5_3', 'conv5_4', 'relu5_4'
-    ]
+    )
 
-
-    data = sio.loadmat(data_path)
+    data = scipy.io.loadmat(data_path)
     mean = data['normalization'][0][0][0]
     mean_pixel = np.mean(mean, axis=(0, 1))
-    constants = data['layers'][0]
+    weights = data['layers'][0]
 
-    net = []
-    for i, kind in enumerate(layers):
-        short = kind[:4]
-        if short == 'conv':
-            weights = constants[i][0][0][0][0][0]
-            # in matconvnet, weights are [width, height, depth, num_filters]
-            # but in tensorflow, [height, width, in_channels, out_channels]
-            weights = np.transpose(weights, (1, 0, 2, 3))
-            bias = constants[i][0][0][0][0][1].reshape(-1)
-            new = _conv_layer(weights, bias)
-        elif short == 'relu':
-            new = tf.nn.relu
-        elif short == 'pool':
-            new = _pool_layer()
-        else:
-            raise ValueError('invalid layer type: %s' % kind)
-        _add_layer(input_image, net, new)
+    net = {}
+    current = input_image
+    for i, name in enumerate(layers):
+        kind = name[:4]
+        if kind == 'conv':
+            kernels, bias = weights[i][0][0][0][0]
+            # matconvnet: weights are [width, height, in_channels, out_channels]
+            # tensorflow: weights are [height, width, in_channels, out_channels]
+            kernels = np.transpose(kernels, (1, 0, 2, 3))
+            bias = bias.reshape(-1)
+            current = _conv_layer(current, kernels, bias)
+        elif kind == 'relu':
+            current = tf.nn.relu(current)
+        elif kind == 'pool':
+            current = _pool_layer(current)
+        net[name] = current
 
-    assert len(layers) == len(net)
+    assert len(net) == len(layers)
+    return net, mean_pixel
 
-    return dict(zip(layers, net)), mean_pixel
+
+def _conv_layer(input, weights, bias):
+    conv = tf.nn.conv2d(input, tf.constant(weights), strides=(1, 1, 1, 1),
+            padding='SAME')
+    return tf.nn.bias_add(conv, bias)
+
+
+def _pool_layer(input):
+    return tf.nn.max_pool(input, ksize=(1, 2, 2, 1), strides=(1, 2, 2, 1),
+            padding='SAME')
+
 
 def preprocess(image, mean_pixel):
     return image - mean_pixel
 
+
 def unprocess(image, mean_pixel):
-    image = image + mean_pixel
-    return image
+    return image + mean_pixel
