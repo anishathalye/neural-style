@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -eu
+
+NAME='frame%03d.jpg'
+OUT='frame-out%03d.jpg'
+NUM=100
+MAX_ITER=1000
+STYLE_IMAGE='starry_night.jpg'
+WIDTH=600
+PRINT_ITER=25
+
+i=1
+
+# process first frame
+filename=$(printf $NAME $i)
+output=$(printf $OUT $i)
+loss=$(python neural_style.py --print-iter $PRINT_ITER --width $WIDTH --style $STYLE_IMAGE --content $filename --output $output --iterations $MAX_ITER)
+
+# process rest of the frames
+i=$(($i + 1))
+while [[ $i -lt $NUM ]]; do
+    prev=$(printf $OUT $(($i - 1)))
+    filename=$(printf $NAME $i)
+    output=$(printf $OUT $i)
+    sleep 5
+    loss=$(python neural_style.py --print-iter $PRINT_ITER --width $WIDTH --style $STYLE_IMAGE --content $filename --initial $prev --output $output --iterations $MAX_ITER --target-loss $loss)
+    i=$(($i + 1))
+done

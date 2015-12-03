@@ -30,6 +30,9 @@ def build_parser():
     parser.add_argument('--iterations', type=int,
             dest='iterations', help='iterations',
             metavar='ITERATIONS', default=ITERATIONS)
+    parser.add_argument('--target-loss', type=float,
+            dest='target_loss', help='target loss',
+            metavar='TARGET_LOSS', default = 0.0)
     parser.add_argument('--width', type=int,
             dest='width', help='output width',
             metavar='WIDTH')
@@ -80,11 +83,12 @@ def main():
     if initial is not None:
         initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
 
-    image = stylize(options.network, initial, content_image, style_image,
+    image, loss = stylize(options.network, initial, content_image, style_image,
             options.iterations, options.content_weight, options.style_weight,
             options.tv_weight, options.learning_rate,
-            print_iter=options.print_iter)
+            print_iter=options.print_iter, target_loss=options.target_loss)
     imsave(options.output, image)
+    print loss
 
 
 def imread(path):

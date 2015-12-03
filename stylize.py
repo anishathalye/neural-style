@@ -2,6 +2,7 @@ import vgg
 
 import tensorflow as tf
 import numpy as np
+import sys
 
 from sys import stderr
 
@@ -11,7 +12,7 @@ STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 
 def stylize(network, initial, content, style, iterations,
         content_weight, style_weight, tv_weight,
-        learning_rate, print_iter=None):
+        learning_rate, print_iter=None, target_loss=0.0):
     shape = (1,) + content.shape
     style_shape = (1,) + style.shape
     content_features = {}
@@ -90,12 +91,17 @@ def stylize(network, initial, content, style, iterations,
         # optimization
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
-            for i in range(iterations):
+            i = 0
+            curr_loss = float('inf')
+            while i < iterations and curr_loss > target_loss:
                 print_progress(i)
                 print >> stderr, 'Iteration %d/%d' % (i + 1, iterations)
                 train_step.run()
                 print_progress(None, i == iterations - 1)
-            return vgg.unprocess(image.eval().reshape(shape[1:]), mean_pixel)
+                if i % 10 == 0:
+                    curr_loss = loss.eval()
+                i += 1
+            return vgg.unprocess(image.eval().reshape(shape[1:]), mean_pixel), loss.eval()
 
 
 def _tensor_size(tensor):
