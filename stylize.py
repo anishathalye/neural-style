@@ -107,7 +107,7 @@ def stylize(network, initial, content, style, iterations,
                             best = image.eval()
                 print_progress(None, i == iterations - 1)
                 i += 1
-            return (vgg.unprocess(best).reshape(shape[1:]), mean_pixel), best_loss)
+            return (vgg.unprocess(best.reshape(shape[1:]), mean_pixel), best_loss)
 
 
 def _tensor_size(tensor):
