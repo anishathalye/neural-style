@@ -55,8 +55,11 @@ def build_parser():
             dest='initial', help='initial image',
             metavar='INITIAL')
     parser.add_argument('--print-iterations', type=int,
-            dest='print_iter', help='statistics printing frequency',
-            metavar='PRINT_ITER')
+            dest='print_iterations', help='statistics printing frequency',
+            metavar='PRINT_ITERATIONS')
+    parser.add_argument('--checkpoint-iterations', type=int,
+            dest='checkpoint_iterations', help='checkpoint frequency',
+            metavar='CHECKPOINT_ITERATIONS')
     return parser
 
 
@@ -83,7 +86,8 @@ def main():
     image = stylize(options.network, initial, content_image, style_image,
             options.iterations, options.content_weight, options.style_weight,
             options.tv_weight, options.learning_rate,
-            print_iter=options.print_iter)
+            print_iterations=options.print_iterations,
+            checkpoint_iterations=options.checkpoint_iterations)
     imsave(options.output, image)
 
 
