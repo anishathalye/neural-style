@@ -11,7 +11,7 @@ STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 
 def stylize(network, initial, content, style, iterations,
         content_weight, style_weight, tv_weight,
-        learning_rate, print_iter=None):
+        learning_rate, print_iterations=None, checkpoint_iterations=None):
     shape = (1,) + content.shape
     style_shape = (1,) + style.shape
     content_features = {}
@@ -80,22 +80,31 @@ def stylize(network, initial, content, style, iterations,
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
         def print_progress(i, last=False):
-            if print_iter is not None:
-                if i is not None and i % print_iter == 0 or last:
+            if print_iterations is not None:
+                if i is not None and i % print_iterations == 0 or last:
                     print >> stderr, '  content loss: %g' % content_loss.eval()
                     print >> stderr, '    style loss: %g' % style_loss.eval()
                     print >> stderr, '       tv loss: %g' % tv_loss.eval()
                     print >> stderr, '    total loss: %g' % loss.eval()
 
         # optimization
+        best_loss = float('inf')
+        best = None
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
             for i in range(iterations):
                 print_progress(i)
                 print >> stderr, 'Iteration %d/%d' % (i + 1, iterations)
                 train_step.run()
+                if checkpoint_iterations is not None:
+                    if i % checkpoint_iterations == 0:
+                        this_loss = loss.eval()
+                        if this_loss < best_loss:
+                            best_loss = this_loss
+                            best = image.eval()
                 print_progress(None, i == iterations - 1)
-            return vgg.unprocess(image.eval().reshape(shape[1:]), mean_pixel)
+            return vgg.unprocess((best or image.eval()).reshape(shape[1:]),
+                    mean_pixel)
 
 
 def _tensor_size(tensor):
