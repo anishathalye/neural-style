@@ -89,13 +89,13 @@ def stylize(network, initial, content, style, iterations,
                     print >> stderr, '    total loss: %g' % loss.eval()
 
         # optimization
+        assert checkpoint_iterations is not None # ugly hack cause lazy
         best_loss = float('inf')
         best = None
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
             i = 0
-            curr_loss = float('inf')
-            while i < iterations and curr_loss > target_loss:
+            while i < iterations and best_loss > target_loss:
                 print_progress(i)
                 print >> stderr, 'Iteration %d/%d' % (i + 1, iterations)
                 train_step.run()
@@ -106,11 +106,8 @@ def stylize(network, initial, content, style, iterations,
                             best_loss = this_loss
                             best = image.eval()
                 print_progress(None, i == iterations - 1)
-                if i % 10 == 0:
-                    curr_loss = loss.eval()
                 i += 1
-            return (vgg.unprocess((best or image.eval()).reshape(shape[1:]),
-                    mean_pixel), min(best_loss, loss.eval))
+            return (vgg.unprocess(best).reshape(shape[1:]), mean_pixel), best_loss)
 
 
 def _tensor_size(tensor):
