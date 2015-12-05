@@ -73,10 +73,9 @@ def main():
     options = parser.parse_args()
 
     content_image = imread(options.content)
-    num_styles = len(options.styles)
     style_images = []
-    for i in range(0,num_styles):
-        style_images.append(imread(options.styles[i]))
+    for style in options.styles:
+        style_images.append(imread(style))
 
     width = options.width
     if width is not None:
@@ -84,7 +83,7 @@ def main():
                 content_image.shape[1] * width)), width)
         content_image = scipy.misc.imresize(content_image, new_shape)
     target_shape = content_image.shape
-    for i in range(0,num_styles):
+    for i in range(len(style_images)):
         style_scale = STYLE_SCALE
         if options.style_scales != None:
             style_scale = options.style_scales[i]
@@ -93,10 +92,12 @@ def main():
 
     style_blend_weights = options.style_blend_weights
     if style_blend_weights == None:
-        style_blend_weights = []
         # default is equal weights
-        for i in range(0,num_styles):
-            style_blend_weights.append(1.0/num_styles)
+        style_blend_weights = [1.0/len(style_images) for _ in style_images]
+    else:
+        total_blend_weight = sum(style_blend_weights)
+        style_blend_weights = [weight/total_blend_weight
+                               for weight in style_blend_weights]
 
     initial = options.initial
     if initial is not None:

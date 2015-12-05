@@ -13,13 +13,10 @@ def stylize(network, initial, content, styles, iterations,
         learning_rate, print_iterations=None, checkpoint_iterations=None):
     shape = (1,) + content.shape
     style_shapes = []
-    num_styles = len(styles)
-    for i in range(0,num_styles):
-        style_shapes.append((1,) + styles[i].shape)
+    for style in styles:
+        style_shapes.append((1,) + style.shape)
     content_features = {}
-    style_features = []
-    for i in range(0,num_styles):
-        style_features.append({})
+    style_features = [{} for _ in style]
 
     # compute content features in feedforward mode
     g = tf.Graph()
@@ -33,7 +30,7 @@ def stylize(network, initial, content, styles, iterations,
     # compute style features in feedforward mode
     g = tf.Graph()
     with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-        for i in range(0,num_styles):
+        for i in range(num_styles):
             image = tf.placeholder('float', shape=style_shapes[i])
             net, _ = vgg.net(network, image)
             style_pre = np.array([vgg.preprocess(styles[i], mean_pixel)])
@@ -60,7 +57,7 @@ def stylize(network, initial, content, styles, iterations,
                 content_features[CONTENT_LAYER].size)
         # style loss
         style_loss = 0
-        for i in range(0,num_styles):
+        for i in range(num_styles):
             style_losses = []
             for style_layer in STYLE_LAYERS:
                 layer = net[style_layer]
