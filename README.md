@@ -63,14 +63,14 @@ style blend weight of 0.2:
 * SciPy
 * Pillow
 * NumPy
-* [Pre-trained VGG network][net]
+* [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`)
 
 ## License
 
 Copyright (c) 2015 Anish Athalye. Released under GPLv3. See
 [LICENSE.txt][license] for details.
 
-[net]: http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
+[net]: http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat
 [paper]: http://arxiv.org/pdf/1508.06576v2.pdf
 [l-bfgs]: https://en.wikipedia.org/wiki/Limited-memory_BFGS
 [adam]: http://arxiv.org/abs/1412.6980
