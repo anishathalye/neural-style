@@ -17,7 +17,7 @@ seems to be around 3x slower than implementations using Torch.
 
 ## Running
 
-`python neural_style.py --content <content file> --style <style file> --output <output file>`
+`python neural_style.py --content <content file> --styles <style file> --output <output file>`
 
 (run `python neural_style.py --help` to see a list of all options)
 
