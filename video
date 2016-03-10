@@ -15,7 +15,7 @@ i=1
 # process first frame
 filename=$(printf $NAME $i)
 output=$(printf $OUT $i)
-loss=$(python neural_style.py --print-iter $PRINT_ITER --width $WIDTH --style $STYLE_IMAGE --content $filename --output $output --iterations $MAX_ITER)
+loss=$(python neural_style.py --print-iter $PRINT_ITER --width $WIDTH --style $STYLE_IMAGE --content $filename --output $output --iterations $MAX_ITER --checkpoint-iter $CHKPT)
 
 # process rest of the frames
 i=$(($i + 1))
@@ -24,6 +24,6 @@ while [[ $i -lt $NUM ]]; do
     filename=$(printf $NAME $i)
     output=$(printf $OUT $i)
     sleep 5
-    loss=$(python neural_style.py --print-iter $PRINT_ITER --width $WIDTH --style $STYLE_IMAGE --content $filename --initial $prev --output $output --iterations $MAX_ITER --target-loss $loss)
+    loss=$(python neural_style.py --print-iter $PRINT_ITER --width $WIDTH --style $STYLE_IMAGE --content $filename --initial $prev --output $output --iterations $MAX_ITER --target-loss $loss --checkpoint-iter $CHKPT)
     i=$(($i + 1))
 done
