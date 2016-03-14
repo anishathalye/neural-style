@@ -30,6 +30,9 @@ def build_parser():
     parser.add_argument('--output',
             dest='output', help='output path',
             metavar='OUTPUT', required=True)
+    parser.add_argument('--checkpoint-output',
+            dest='checkpoint_output', help='checkpoint output format',
+            metavar='OUTPUT')
     parser.add_argument('--iterations', type=int,
             dest='iterations', help='iterations (default %(default)s)',
             metavar='ITERATIONS', default=ITERATIONS)
@@ -106,12 +109,32 @@ def main():
     if initial is not None:
         initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
 
-    image = stylize(options.network, initial, content_image, style_images,
-            options.iterations, options.content_weight, options.style_weight,
-            style_blend_weights, options.tv_weight, options.learning_rate,
-            print_iterations=options.print_iterations,
-            checkpoint_iterations=options.checkpoint_iterations)
-    imsave(options.output, image)
+    if options.checkpoint_output and "%s" not in options.checkpoint_output:
+        parser.error("To save intermediate images, the checkpoint output "
+                     "parameter must contain `%s` (e.g. `foo%s.jpg`)")
+
+    for iteration, image in stylize(
+        network=options.network,
+        initial=initial,
+        content=content_image,
+        styles=style_images,
+        iterations=options.iterations,
+        content_weight=options.content_weight,
+        style_weight=options.style_weight,
+        style_blend_weights=style_blend_weights,
+        tv_weight=options.tv_weight,
+        learning_rate=options.learning_rate,
+        print_iterations=options.print_iterations,
+        checkpoint_iterations=options.checkpoint_iterations
+    ):
+        output_file = None
+        if iteration is not None:
+            if options.checkpoint_output:
+                output_file = options.checkpoint_output % iteration
+        else:
+            output_file = options.output
+        if output_file:
+            imsave(output_file, image)
 
 
 def imread(path):
