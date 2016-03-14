@@ -1,4 +1,6 @@
-from stylize import *
+import os
+
+from stylize import stylize
 
 import numpy as np
 import scipy.misc
@@ -28,8 +30,11 @@ def build_parser():
     parser.add_argument('--output',
             dest='output', help='output path',
             metavar='OUTPUT', required=True)
+    parser.add_argument('--checkpoint-output',
+            dest='checkpoint_output', help='checkpoint output format',
+            metavar='OUTPUT')
     parser.add_argument('--iterations', type=int,
-            dest='iterations', help='iterations',
+            dest='iterations', help='iterations (default %(default)s)',
             metavar='ITERATIONS', default=ITERATIONS)
     parser.add_argument('--width', type=int,
             dest='width', help='output width',
@@ -39,22 +44,22 @@ def build_parser():
             nargs='+', help='one or more style scales',
             metavar='STYLE_SCALE')
     parser.add_argument('--network',
-            dest='network', help='path to network parameters',
+            dest='network', help='path to network parameters (default %(default)s)',
             metavar='VGG_PATH', default=VGG_PATH)
     parser.add_argument('--content-weight', type=float,
-            dest='content_weight', help='content weight',
+            dest='content_weight', help='content weight (default %(default)s)',
             metavar='CONTENT_WEIGHT', default=CONTENT_WEIGHT)
     parser.add_argument('--style-weight', type=float,
-            dest='style_weight', help='style weight',
+            dest='style_weight', help='style weight (default %(default)s)',
             metavar='STYLE_WEIGHT', default=STYLE_WEIGHT)
     parser.add_argument('--style-blend-weights', type=float,
             dest='style_blend_weights', help='style blending weights',
             nargs='+', metavar='STYLE_BLEND_WEIGHT')
     parser.add_argument('--tv-weight', type=float,
-            dest='tv_weight', help='total variation regularization weight',
+            dest='tv_weight', help='total variation regularization weight (default %(default)s)',
             metavar='TV_WEIGHT', default=TV_WEIGHT)
     parser.add_argument('--learning-rate', type=float,
-            dest='learning_rate', help='learning rate',
+            dest='learning_rate', help='learning rate (default %(default)s)',
             metavar='LEARNING_RATE', default=LEARNING_RATE)
     parser.add_argument('--initial',
             dest='initial', help='initial image',
@@ -71,6 +76,9 @@ def build_parser():
 def main():
     parser = build_parser()
     options = parser.parse_args()
+
+    if not os.path.isfile(options.network):
+        parser.error("Network %s does not exist. (Did you forget to download it?)" % options.network)
 
     content_image = imread(options.content)
     style_images = [imread(style) for style in options.styles]
@@ -101,12 +109,32 @@ def main():
     if initial is not None:
         initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
 
-    image = stylize(options.network, initial, content_image, style_images,
-            options.iterations, options.content_weight, options.style_weight,
-            style_blend_weights, options.tv_weight, options.learning_rate,
-            print_iterations=options.print_iterations,
-            checkpoint_iterations=options.checkpoint_iterations)
-    imsave(options.output, image)
+    if options.checkpoint_output and "%s" not in options.checkpoint_output:
+        parser.error("To save intermediate images, the checkpoint output "
+                     "parameter must contain `%s` (e.g. `foo%s.jpg`)")
+
+    for iteration, image in stylize(
+        network=options.network,
+        initial=initial,
+        content=content_image,
+        styles=style_images,
+        iterations=options.iterations,
+        content_weight=options.content_weight,
+        style_weight=options.style_weight,
+        style_blend_weights=style_blend_weights,
+        tv_weight=options.tv_weight,
+        learning_rate=options.learning_rate,
+        print_iterations=options.print_iterations,
+        checkpoint_iterations=options.checkpoint_iterations
+    ):
+        output_file = None
+        if iteration is not None:
+            if options.checkpoint_output:
+                output_file = options.checkpoint_output % iteration
+        else:
+            output_file = options.output
+        if output_file:
+            imsave(output_file, image)
 
 
 def imread(path):

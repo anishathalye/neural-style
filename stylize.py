@@ -9,9 +9,24 @@ CONTENT_LAYER = 'relu4_2'
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 
 
+try:
+    reduce
+except NameError:
+    from functools import reduce
+
+
 def stylize(network, initial, content, styles, iterations,
         content_weight, style_weight, style_blend_weights, tv_weight,
         learning_rate, print_iterations=None, checkpoint_iterations=None):
+    """
+    Stylize images.
+
+    This function yields tuples (iteration, image); `iteration` is None
+    if this is the final image (the last iteration).  Other tuples are yielded
+    every `checkpoint_iterations` iterations.
+
+    :rtype: iterator[tuple[int|None,image]]
+    """
     shape = (1,) + content.shape
     style_shapes = [(1,) + style.shape for style in styles]
     content_features = {}
@@ -82,12 +97,12 @@ def stylize(network, initial, content, styles, iterations,
         train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
         def print_progress(i, last=False):
-            if print_iterations is not None:
-                if i is not None and i % print_iterations == 0 or last:
-                    print >> stderr, '  content loss: %g' % content_loss.eval()
-                    print >> stderr, '    style loss: %g' % style_loss.eval()
-                    print >> stderr, '       tv loss: %g' % tv_loss.eval()
-                    print >> stderr, '    total loss: %g' % loss.eval()
+            stderr.write('Iteration %d/%d\n' % (i + 1, iterations))
+            if last or (print_iterations and i % print_iterations == 0):
+                stderr.write('  content loss: %g\n' % content_loss.eval())
+                stderr.write('    style loss: %g\n' % style_loss.eval())
+                stderr.write('       tv loss: %g\n' % tv_loss.eval())
+                stderr.write('    total loss: %g\n' % loss.eval())
 
         # optimization
         best_loss = float('inf')
@@ -95,17 +110,19 @@ def stylize(network, initial, content, styles, iterations,
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
             for i in range(iterations):
-                print_progress(i)
-                print >> stderr, 'Iteration %d/%d' % (i + 1, iterations)
+                last_step = (i == iterations - 1)
+                print_progress(i, last=last_step)
                 train_step.run()
-                if (checkpoint_iterations is not None and
-                        i % checkpoint_iterations == 0) or i == iterations - 1:
+
+                if (checkpoint_iterations and i % checkpoint_iterations == 0) or last_step:
                     this_loss = loss.eval()
                     if this_loss < best_loss:
                         best_loss = this_loss
                         best = image.eval()
-                print_progress(None, i == iterations - 1)
-            return vgg.unprocess(best.reshape(shape[1:]), mean_pixel)
+                    yield (
+                        (None if last_step else i),
+                        vgg.unprocess(best.reshape(shape[1:]), mean_pixel)
+                    )
 
 
 def _tensor_size(tensor):
