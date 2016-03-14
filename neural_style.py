@@ -1,4 +1,4 @@
-from stylize import *
+from stylize import stylize
 
 import numpy as np
 import scipy.misc
