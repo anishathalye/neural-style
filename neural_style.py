@@ -1,3 +1,5 @@
+import os
+
 from stylize import stylize
 
 import numpy as np
@@ -71,6 +73,9 @@ def build_parser():
 def main():
     parser = build_parser()
     options = parser.parse_args()
+
+    if not os.path.isfile(options.network):
+        parser.error("Network %s does not exist. (Did you forget to download it?)" % options.network)
 
     content_image = imread(options.content)
     style_images = [imread(style) for style in options.styles]
