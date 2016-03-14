@@ -31,7 +31,7 @@ def build_parser():
             dest='output', help='output path',
             metavar='OUTPUT', required=True)
     parser.add_argument('--iterations', type=int,
-            dest='iterations', help='iterations',
+            dest='iterations', help='iterations (default %(default)s)',
             metavar='ITERATIONS', default=ITERATIONS)
     parser.add_argument('--width', type=int,
             dest='width', help='output width',
@@ -41,22 +41,22 @@ def build_parser():
             nargs='+', help='one or more style scales',
             metavar='STYLE_SCALE')
     parser.add_argument('--network',
-            dest='network', help='path to network parameters',
+            dest='network', help='path to network parameters (default %(default)s)',
             metavar='VGG_PATH', default=VGG_PATH)
     parser.add_argument('--content-weight', type=float,
-            dest='content_weight', help='content weight',
+            dest='content_weight', help='content weight (default %(default)s)',
             metavar='CONTENT_WEIGHT', default=CONTENT_WEIGHT)
     parser.add_argument('--style-weight', type=float,
-            dest='style_weight', help='style weight',
+            dest='style_weight', help='style weight (default %(default)s)',
             metavar='STYLE_WEIGHT', default=STYLE_WEIGHT)
     parser.add_argument('--style-blend-weights', type=float,
             dest='style_blend_weights', help='style blending weights',
             nargs='+', metavar='STYLE_BLEND_WEIGHT')
     parser.add_argument('--tv-weight', type=float,
-            dest='tv_weight', help='total variation regularization weight',
+            dest='tv_weight', help='total variation regularization weight (default %(default)s)',
             metavar='TV_WEIGHT', default=TV_WEIGHT)
     parser.add_argument('--learning-rate', type=float,
-            dest='learning_rate', help='learning rate',
+            dest='learning_rate', help='learning rate (default %(default)s)',
             metavar='LEARNING_RATE', default=LEARNING_RATE)
     parser.add_argument('--initial',
             dest='initial', help='initial image',
