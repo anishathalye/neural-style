@@ -67,7 +67,7 @@ style blend weight of 0.2:
 
 ## License
 
-Copyright (c) 2015 Anish Athalye. Released under GPLv3. See
+Copyright (c) 2015-2016 Anish Athalye. Released under GPLv3. See
 [LICENSE.txt][license] for details.
 
 [net]: http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat
