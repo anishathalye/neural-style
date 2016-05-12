@@ -1,9 +1,9 @@
 import os
 
-from stylize import stylize
-
 import numpy as np
 import scipy.misc
+
+from stylize import stylize
 
 import math
 from argparse import ArgumentParser
