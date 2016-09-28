@@ -6,7 +6,7 @@ This implementation is a lot simpler than a lot of the other ones out there,
 thanks to TensorFlow's really nice API and [automatic differentiation][ad].
 
 TensorFlow doesn't support [L-BFGS][l-bfgs] (which is what the original authors
-used), so we use [Adam][adam]. This may require require a little bit more
+used), so we use [Adam][adam]. This may require a little bit more
 hyperparameter tuning to get nice results.
 
 TensorFlow seems to be [slower][tensorflow-benchmarks] than a lot of the other
