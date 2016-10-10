@@ -59,10 +59,10 @@ style blend weight of 0.2:
 
 ## Requirements
 
-* TensorFlow
-* SciPy
+* [TensorFlow](https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#download-and-setup)
+* [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
+* [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * Pillow
-* NumPy
 * [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`)
 
 ## License
