@@ -5,10 +5,6 @@ An implementation of [neural style][paper] in TensorFlow.
 This implementation is a lot simpler than a lot of the other ones out there,
 thanks to TensorFlow's really nice API and [automatic differentiation][ad].
 
-TensorFlow doesn't support [L-BFGS][l-bfgs] (which is what the original authors
-used), so we use [Adam][adam]. This may require a little bit more
-hyperparameter tuning to get nice results.
-
 TensorFlow seems to be [slower][tensorflow-benchmarks] than a lot of the other
 deep learning frameworks out there. I'm sure this implementation could be
 improved, but it would probably take improvements in TensorFlow itself as well
