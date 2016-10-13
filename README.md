@@ -19,7 +19,11 @@ seems to be around 3x slower than implementations using Torch.
 
 `python neural_style.py --content <content file> --styles <style file> --output <output file>`
 
-(run `python neural_style.py --help` to see a list of all options)
+Run `python neural_style.py --help` to see a list of all options.
+
+Use `--checkpoint-output` and `--checkpoint-iterations` to save checkpoint images.
+
+Use `--iterations` to change the number of iterations (default 1000).  1000 iterations take around 10 hours to run on a Mid 2013 Macbook Air for a 528×960 pixel content file.  
 
 ## Example 1
 
@@ -63,7 +67,7 @@ style blend weight of 0.2:
 * [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
-* [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository
+* [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network` option.
 
 ## License
 
