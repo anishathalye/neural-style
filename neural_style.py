@@ -17,6 +17,7 @@ TV_WEIGHT = 1e2
 LEARNING_RATE = 1e1
 STYLE_SCALE = 1.0
 ITERATIONS = 1000
+OPTIMIZER = 'lbfgs'
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 
 
@@ -32,6 +33,9 @@ def build_parser():
     parser.add_argument('--output',
             dest='output', help='output path',
             metavar='OUTPUT', required=True)
+    parser.add_argument('--optimizer',
+            dest='optimizer', help='lbfgs or adam (default %(default)s)',
+            metavar='OPTIMIZER', default=OPTIMIZER)
     parser.add_argument('--iterations', type=int,
             dest='iterations', help='iterations (default %(default)s)',
             metavar='ITERATIONS', default=ITERATIONS)
@@ -84,6 +88,7 @@ def main():
 
     content_image = imread(options.content)
     style_images = [imread(style) for style in options.styles]
+    optimizer = options.optimizer
 
     width = options.width
     if width is not None:
@@ -120,6 +125,7 @@ def main():
         initial=initial,
         content=content_image,
         styles=style_images,
+        optimizer=optimizer,
         iterations=options.iterations,
         content_weight=options.content_weight,
         style_weight=options.style_weight,
