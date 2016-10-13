@@ -5,8 +5,6 @@ import os
 import numpy as np
 import scipy.misc
 
-from stylize import stylize
-
 import math
 from argparse import ArgumentParser
 
@@ -119,6 +117,8 @@ def main():
     if options.checkpoint_output and "%s" not in options.checkpoint_output:
         parser.error("To save intermediate images, the checkpoint output "
                      "parameter must contain `%s` (e.g. `foo%s.jpg`)")
+
+    from stylize import stylize
 
     for iteration, image in stylize(
         network=options.network,
