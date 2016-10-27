@@ -57,6 +57,24 @@ style blend weight of 0.2:
 ![input-style](examples/2-style1.jpg)
 ![input-style](examples/2-style2.jpg)
 
+## Running in Docker(CPU only)
+1. Docker build:
+```
+docker build -t docker_neural_style .
+```
+
+2. Download Pre-trained imagenet-vgg-verydeep-19.mat in your computer
+```
+wget http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat
+```
+Store in /Users/you/ for example
+
+3. Docker run
+```
+docker run -it -p 8888:8888 -v /Users/you:/notebooks/neural-style-mat docker_neural_style
+```
+Then you can run neural-style code with jupyter notebook in http://localhost:8888/
+
 ## Requirements
 
 * [TensorFlow](https://www.tensorflow.org/versions/master/get_started/os_setup.html#download-and-setup)
