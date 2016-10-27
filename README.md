@@ -75,6 +75,15 @@ docker run -it -p 8888:8888 -v /Users/you:/notebooks/neural-style-mat docker_neu
 ```
 Then you can run neural-style code with jupyter notebook in http://localhost:8888/
 
+#### Docker run in command
+```
+docker run -it -p 8888:8888 -v /Users/you:/notebooks/neural-style-mat docker_neural_style /bin/bash
+```
+```
+python neural_style.py --content examples/1-content.jpg --styles examples/1-style.jpg --output examples/myoutput.jpg --network ../neura
+l-style1/imagenet-vgg-verydeep-19.mat
+```
+
 ## Requirements
 
 * [TensorFlow](https://www.tensorflow.org/versions/master/get_started/os_setup.html#download-and-setup)
