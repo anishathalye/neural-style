@@ -58,18 +58,18 @@ style blend weight of 0.2:
 ![input-style](examples/2-style2.jpg)
 
 ## Running in Docker(CPU only)
-1. Docker build:
+#### Docker build:
 ```
 docker build -t docker_neural_style .
 ```
 
-2. Download Pre-trained imagenet-vgg-verydeep-19.mat in your computer
+#### Download Pre-trained imagenet-vgg-verydeep-19.mat in your computer
 ```
 wget http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat
 ```
 Store in /Users/you/ for example
 
-3. Docker run
+#### Docker run
 ```
 docker run -it -p 8888:8888 -v /Users/you:/notebooks/neural-style-mat docker_neural_style
 ```
