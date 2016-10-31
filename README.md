@@ -23,7 +23,7 @@ Run `python neural_style.py --help` to see a list of all options.
 
 Use `--checkpoint-output` and `--checkpoint-iterations` to save checkpoint images.
 
-Use `--iterations` to change the number of iterations (default 1000).  1000 iterations take around 10 hours to run on a Mid 2013 Macbook Air for a 528×960 pixel content file.  
+Use `--iterations` to change the number of iterations (default 1000).  For a 528×960 pixel content file, 1000 iterations take around 30 minutes to run on a GPU, or 10 hours on a Mid 2013 Macbook Air.
 
 ## Example 1
 
