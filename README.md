@@ -9,11 +9,8 @@ TensorFlow doesn't support [L-BFGS][l-bfgs] (which is what the original authors
 used), so we use [Adam][adam]. This may require a little bit more
 hyperparameter tuning to get nice results.
 
-TensorFlow seems to be [slower][tensorflow-benchmarks] than a lot of the other
-deep learning frameworks out there. I'm sure this implementation could be
-improved, but it would probably take improvements in TensorFlow itself as well
-to get it to operate at the same speed as other implementations. As of now, it
-seems to be around 3x slower than implementations using Torch.
+**See [here][lengstrom-fast-style-transfer] for an implementation of [fast
+(feed-forward) neural style][fast-neural-style] in TensorFlow.**
 
 ## Running
 
@@ -75,5 +72,6 @@ Copyright (c) 2015-2016 Anish Athalye. Released under GPLv3. See
 [l-bfgs]: https://en.wikipedia.org/wiki/Limited-memory_BFGS
 [adam]: http://arxiv.org/abs/1412.6980
 [ad]: https://en.wikipedia.org/wiki/Automatic_differentiation
-[tensorflow-benchmarks]: https://github.com/soumith/convnet-benchmarks
+[lengstrom-fast-style-transfer]: https://github.com/lengstrom/fast-style-transfer
+[fast-neural-style]: https://arxiv.org/pdf/1603.08155v1.pdf
 [license]: LICENSE.txt
