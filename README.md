@@ -66,6 +66,20 @@ style blend weight of 0.2:
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
 * [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network` option.
 
+## Citation
+
+If you use this implementation in your work, please cite the following:
+
+```
+@misc{athalye2015neuralstyle,
+  author = {Anish Athalye},
+  title = {Neural Style},
+  year = {2015},
+  howpublished = {\url{https://github.com/anishathalye/neural-style}},
+  note = {commit xxxxxxx}
+}
+```
+
 ## License
 
 Copyright (c) 2015-2016 Anish Athalye. Released under GPLv3. See
