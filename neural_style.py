@@ -140,7 +140,11 @@ def main():
 
 
 def imread(path):
-    return scipy.misc.imread(path).astype(np.float)
+    img = scipy.misc.imread(path).astype(np.float)
+    if len(img.shape) == 2:
+        # grayscale
+        img = np.dstack((img,img,img))
+    return img
 
 
 def imsave(path, img):
