@@ -16,8 +16,9 @@ import tensorflow as tf
 
 # default arguments
 CONTENT_WEIGHT = 5e0
-STYLE_WEIGHT = 1e2
+STYLE_WEIGHT = 5e2
 TV_WEIGHT = 1e2
+STYLE_LAYER_WEIGHT_EXP = 1
 LEARNING_RATE = 1e1
 BETA1 = 0.9
 BETA2 = 0.999
@@ -67,6 +68,9 @@ def build_parser():
     parser.add_argument('--style-weight', type=float,
             dest='style_weight', help='style weight (default %(default)s)',
             metavar='STYLE_WEIGHT', default=STYLE_WEIGHT)
+    parser.add_argument('--style-layer-weight-exp', type=float,
+            dest='style_layer_weight_exp', help='style layer weight exponentional increase - weight(layer<n+1>) = weight_exp*weight(layer<n>) (default %(default)s)',
+            metavar='STYLE_LAYER_WEIGHT_EXP', default=STYLE_LAYER_WEIGHT_EXP)
     parser.add_argument('--style-blend-weights', type=float,
             dest='style_blend_weights', help='style blending weights',
             nargs='+', metavar='STYLE_BLEND_WEIGHT')
@@ -142,6 +146,7 @@ def main():
         iterations=options.iterations,
         content_weight=options.content_weight,
         style_weight=options.style_weight,
+        style_layer_weight_exp=options.style_layer_weight_exp,
         style_blend_weights=style_blend_weights,
         tv_weight=options.tv_weight,
         learning_rate=options.learning_rate,
