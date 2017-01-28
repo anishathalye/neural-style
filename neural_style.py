@@ -92,6 +92,9 @@ def build_parser():
     parser.add_argument('--initial',
             dest='initial', help='initial image',
             metavar='INITIAL')
+    parser.add_argument('--initial-noiseblend', type=float,
+            dest='initial_noiseblend', help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)',
+            metavar='INITIAL_NOISEBLEND')
     parser.add_argument('--preserve-colors', type=int,
             dest='preserve_colors', help='style-only transfer (preserving colors): 1 if color transfer is not needed (default %(default)s)',
             metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
@@ -133,6 +136,15 @@ def main():
     initial = options.initial
     if initial is not None:
         initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
+        # Initial guess is specified, but not noiseblend - no noise should be blended
+        if options.initial_noiseblend is None:
+            options.initial_noiseblend = 0.0
+    else:
+        # Neither inital, nor noiseblend is provided, falling back to random generated initial guess
+        if options.initial_noiseblend is None:
+            options.initial_noiseblend = 1.0
+        if options.initial_noiseblend < 1.0:
+            initial = content_image
 
     if options.checkpoint_output and "%s" not in options.checkpoint_output:
         parser.error("To save intermediate images, the checkpoint output "
@@ -141,6 +153,7 @@ def main():
     for iteration, image in stylize(
         network=options.network,
         initial=initial,
+        initial_noiseblend=options.initial_noiseblend,
         content=content_image,
         styles=style_images,
         iterations=options.iterations,

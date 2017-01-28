@@ -17,7 +17,7 @@ except NameError:
     from functools import reduce
 
 
-def stylize(network, initial, content, styles, iterations,
+def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         content_weight, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
         learning_rate, beta1, beta2, epsilon,
         print_iterations=None, checkpoint_iterations=None):
@@ -70,6 +70,8 @@ def stylize(network, initial, content, styles, iterations,
                 gram = np.matmul(features.T, features) / features.size
                 style_features[i][layer] = gram
 
+    initial_content_noise_coeff = 1.0 - initial_noiseblend
+                
     # make stylized image using backpropogation
     with tf.Graph().as_default():
         if initial is None:
@@ -78,6 +80,8 @@ def stylize(network, initial, content, styles, iterations,
         else:
             initial = np.array([vgg.preprocess(initial, mean_pixel)])
             initial = initial.astype('float32')
+            noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
+            initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * 0.256) * (1.0 - initial_content_noise_coeff)
         image = tf.Variable(initial)
         net, _ = vgg.net(network, image)
 
