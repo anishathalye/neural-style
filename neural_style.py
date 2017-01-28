@@ -10,6 +10,8 @@ from stylize import stylize
 import math
 from argparse import ArgumentParser
 
+from matplotlib import pyplot as plt
+
 # default arguments
 CONTENT_WEIGHT = 5e0
 STYLE_WEIGHT = 1e2
@@ -149,7 +151,7 @@ def imread(path):
 
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
-    scipy.misc.imsave(path, img)
+    plt.imsave(path, img)
 
 
 if __name__ == '__main__':
