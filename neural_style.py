@@ -16,6 +16,7 @@ import tensorflow as tf
 
 # default arguments
 CONTENT_WEIGHT = 5e0
+CONTENT_WEIGHT_BLEND = 1
 STYLE_WEIGHT = 5e2
 TV_WEIGHT = 1e2
 STYLE_LAYER_WEIGHT_EXP = 1
@@ -62,6 +63,9 @@ def build_parser():
     parser.add_argument('--network',
             dest='network', help='path to network parameters (default %(default)s)',
             metavar='VGG_PATH', default=VGG_PATH)
+    parser.add_argument('--content-weight-blend', type=float,
+            dest='content_weight_blend', help='content weight blend, conv4_2 * blend + conv5_2 * (1-blend) (default %(default)s)',
+            metavar='CONTENT_WEIGHT_BLEND', default=CONTENT_WEIGHT_BLEND)
     parser.add_argument('--content-weight', type=float,
             dest='content_weight', help='content weight (default %(default)s)',
             metavar='CONTENT_WEIGHT', default=CONTENT_WEIGHT)
@@ -158,6 +162,7 @@ def main():
         styles=style_images,
         iterations=options.iterations,
         content_weight=options.content_weight,
+        content_weight_blend=options.content_weight_blend,
         style_weight=options.style_weight,
         style_layer_weight_exp=options.style_layer_weight_exp,
         style_blend_weights=style_blend_weights,

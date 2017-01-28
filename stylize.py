@@ -7,7 +7,7 @@ import numpy as np
 
 from sys import stderr
 
-CONTENT_LAYER = 'relu4_2'
+CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 
 
@@ -18,7 +18,7 @@ except NameError:
 
 
 def stylize(network, initial, initial_noiseblend, content, styles, iterations,
-        content_weight, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
+        content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
         learning_rate, beta1, beta2, epsilon,
         print_iterations=None, checkpoint_iterations=None):
     """
@@ -54,8 +54,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         image = tf.placeholder('float', shape=shape)
         net, mean_pixel = vgg.net(network, image)
         content_pre = np.array([vgg.preprocess(content, mean_pixel)])
-        content_features[CONTENT_LAYER] = net[CONTENT_LAYER].eval(
-                feed_dict={image: content_pre})
+        for layer in CONTENT_LAYERS:
+            content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
 
     # compute style features in feedforward mode
     for i in range(len(styles)):
@@ -86,9 +86,18 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         net, _ = vgg.net(network, image)
 
         # content loss
-        content_loss = content_weight * (2 * tf.nn.l2_loss(
-                net[CONTENT_LAYER] - content_features[CONTENT_LAYER]) /
-                content_features[CONTENT_LAYER].size)
+        CONTENT_LAYERS_WEIGHTS = {}
+        CONTENT_LAYERS_WEIGHTS['relu4_2'] = content_weight_blend
+        CONTENT_LAYERS_WEIGHTS['relu5_2'] = 1.0 - content_weight_blend
+        
+        content_loss = 0
+        content_losses = []
+        for content_layer in CONTENT_LAYERS:
+            content_losses.append(CONTENT_LAYERS_WEIGHTS[content_layer] * content_weight * (2 * tf.nn.l2_loss(
+                    net[content_layer] - content_features[content_layer]) /
+                    content_features[content_layer].size))
+        content_loss += reduce(tf.add, content_losses)
+        
         # style loss
         style_loss = 0
         for i in range(len(styles)):
