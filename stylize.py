@@ -127,24 +127,28 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         # optimizer setup
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
 
-        def print_progress(i, last=False):
-            stderr.write('Iteration %d/%d\n' % (i + 1, iterations))
-            if last or (print_iterations and i % print_iterations == 0):
-                stderr.write('  content loss: %g\n' % content_loss.eval())
-                stderr.write('    style loss: %g\n' % style_loss.eval())
-                stderr.write('       tv loss: %g\n' % tv_loss.eval())
-                stderr.write('    total loss: %g\n' % loss.eval())
+        def print_progress():
+            stderr.write('  content loss: %g\n' % content_loss.eval())
+            stderr.write('    style loss: %g\n' % style_loss.eval())
+            stderr.write('       tv loss: %g\n' % tv_loss.eval())
+            stderr.write('    total loss: %g\n' % loss.eval())
 
         # optimization
         best_loss = float('inf')
         best = None
         with tf.Session() as sess:
             sess.run(tf.initialize_all_variables())
+            stderr.write('Optimization started..\n')
+            if (print_iterations and print_iterations != 0):
+                print_progress()
             for i in range(iterations):
-                last_step = (i == iterations - 1)
-                print_progress(i, last=last_step)
+                stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
                 train_step.run()
 
+                last_step = (i == iterations - 1)
+                if last_step or (print_iterations and i % print_iterations == 0):
+                    print_progress()
+                
                 if (checkpoint_iterations and i % checkpoint_iterations == 0) or last_step:
                     this_loss = loss.eval()
                     if this_loss < best_loss:
