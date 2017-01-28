@@ -17,6 +17,9 @@ CONTENT_WEIGHT = 5e0
 STYLE_WEIGHT = 1e2
 TV_WEIGHT = 1e2
 LEARNING_RATE = 1e1
+BETA1 = 0.9
+BETA2 = 0.999
+EPSILON = 1e-08
 STYLE_SCALE = 1.0
 ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
@@ -71,6 +74,15 @@ def build_parser():
     parser.add_argument('--learning-rate', type=float,
             dest='learning_rate', help='learning rate (default %(default)s)',
             metavar='LEARNING_RATE', default=LEARNING_RATE)
+    parser.add_argument('--beta1', type=float,
+            dest='beta1', help='Adam: beta1 parameter (default %(default)s)',
+            metavar='BETA1', default=BETA1)
+    parser.add_argument('--beta2', type=float,
+            dest='beta2', help='Adam: beta2 parameter (default %(default)s)',
+            metavar='BETA2', default=BETA2)
+    parser.add_argument('--eps', type=float,
+            dest='epsilon', help='Adam: epsilon parameter (default %(default)s)',
+            metavar='EPSILON', default=EPSILON)
     parser.add_argument('--initial',
             dest='initial', help='initial image',
             metavar='INITIAL')
@@ -128,6 +140,9 @@ def main():
         style_blend_weights=style_blend_weights,
         tv_weight=options.tv_weight,
         learning_rate=options.learning_rate,
+        beta1=options.beta1,
+        beta2=options.beta2,
+        epsilon=options.epsilon,
         print_iterations=options.print_iterations,
         checkpoint_iterations=options.checkpoint_iterations
     ):

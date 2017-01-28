@@ -19,7 +19,8 @@ except NameError:
 
 def stylize(network, initial, content, styles, iterations,
         content_weight, style_weight, style_blend_weights, tv_weight,
-        learning_rate, print_iterations=None, checkpoint_iterations=None):
+        learning_rate, beta1, beta2, epsilon,
+        print_iterations=None, checkpoint_iterations=None):
     """
     Stylize images.
 
@@ -96,7 +97,7 @@ def stylize(network, initial, content, styles, iterations,
         loss = content_loss + style_loss + tv_loss
 
         # optimizer setup
-        train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
 
         def print_progress(i, last=False):
             stderr.write('Iteration %d/%d\n' % (i + 1, iterations))
