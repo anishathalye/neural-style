@@ -18,7 +18,7 @@ except NameError:
 
 def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
-        learning_rate, beta1, beta2, epsilon,
+        learning_rate, beta1, beta2, epsilon, pooling,
         print_iterations=None, checkpoint_iterations=None):
     """
     Stylize images.
@@ -53,7 +53,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
     g = tf.Graph()
     with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
         image = tf.placeholder('float', shape=shape)
-        net = vgg.net_preloaded(vgg_weights, image)
+        net = vgg.net_preloaded(vgg_weights, image, pooling)
         content_pre = np.array([vgg.preprocess(content, vgg_mean_pixel)])
         for layer in CONTENT_LAYERS:
             content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
@@ -63,7 +63,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         g = tf.Graph()
         with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
             image = tf.placeholder('float', shape=style_shapes[i])
-            net = vgg.net_preloaded(vgg_weights, image)
+            net = vgg.net_preloaded(vgg_weights, image, pooling)
             style_pre = np.array([vgg.preprocess(styles[i], vgg_mean_pixel)])
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
@@ -84,7 +84,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
             initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * 0.256) * (1.0 - initial_content_noise_coeff)
         image = tf.Variable(initial)
-        net = vgg.net_preloaded(vgg_weights, image)
+        net = vgg.net_preloaded(vgg_weights, image, pooling)
 
         # content loss
         CONTENT_LAYERS_WEIGHTS = {}

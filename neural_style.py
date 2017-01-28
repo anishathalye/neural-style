@@ -28,6 +28,7 @@ STYLE_SCALE = 1.0
 ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 PRESERVE_COLORS = 0
+POOLING = 'max'
 
 def build_parser():
     parser = ArgumentParser()
@@ -102,6 +103,9 @@ def build_parser():
     parser.add_argument('--preserve-colors', type=int,
             dest='preserve_colors', help='style-only transfer (preserving colors): 1 if color transfer is not needed (default %(default)s)',
             metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
+    parser.add_argument('--pooling',
+            dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
+            metavar='POOLING', default=POOLING)
     return parser
 
 
@@ -171,6 +175,7 @@ def main():
         beta1=options.beta1,
         beta2=options.beta2,
         epsilon=options.epsilon,
+        pooling=options.pooling,
         print_iterations=options.print_iterations,
         checkpoint_iterations=options.checkpoint_iterations
     ):
