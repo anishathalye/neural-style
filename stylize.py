@@ -10,7 +10,6 @@ from sys import stderr
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 
-
 try:
     reduce
 except NameError:
@@ -35,6 +34,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
     content_features = {}
     style_features = [{} for _ in styles]
 
+    vgg_weights, vgg_mean_pixel = vgg.load_net(network)
+    
     layer_weight = 1.0
     STYLE_LAYERS_WEIGHTS = {}
     for style_layer in STYLE_LAYERS:
@@ -52,8 +53,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
     g = tf.Graph()
     with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
         image = tf.placeholder('float', shape=shape)
-        net, mean_pixel = vgg.net(network, image)
-        content_pre = np.array([vgg.preprocess(content, mean_pixel)])
+        net = vgg.net_preloaded(vgg_weights, image)
+        content_pre = np.array([vgg.preprocess(content, vgg_mean_pixel)])
         for layer in CONTENT_LAYERS:
             content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
 
@@ -62,8 +63,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
         g = tf.Graph()
         with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
             image = tf.placeholder('float', shape=style_shapes[i])
-            net, _ = vgg.net(network, image)
-            style_pre = np.array([vgg.preprocess(styles[i], mean_pixel)])
+            net = vgg.net_preloaded(vgg_weights, image)
+            style_pre = np.array([vgg.preprocess(styles[i], vgg_mean_pixel)])
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
@@ -78,12 +79,12 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
             initial = tf.random_normal(shape) * 0.256
         else:
-            initial = np.array([vgg.preprocess(initial, mean_pixel)])
+            initial = np.array([vgg.preprocess(initial, vgg_mean_pixel)])
             initial = initial.astype('float32')
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
             initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * 0.256) * (1.0 - initial_content_noise_coeff)
         image = tf.Variable(initial)
-        net, _ = vgg.net(network, image)
+        net = vgg.net_preloaded(vgg_weights, image)
 
         # content loss
         CONTENT_LAYERS_WEIGHTS = {}
@@ -151,7 +152,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
                         best = image.eval()
                     yield (
                         (None if last_step else i),
-                        vgg.unprocess(best.reshape(shape[1:]), mean_pixel)
+                        vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
                     )
 
 
