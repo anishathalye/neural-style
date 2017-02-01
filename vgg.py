@@ -24,10 +24,14 @@ def net(data_path, input_image):
     data = scipy.io.loadmat(data_path)
     mean = data['normalization'][0][0][0]
     mean_pixel = np.mean(mean, axis=(0, 1))
+
+    channels = tf.split(3, 3, input_image)
+    normalized_channels = map(lambda (c, m): c - m, zip(channels, mean_pixel))
+    normalized_input = tf.concat(3, normalized_channels)
     weights = data['layers'][0]
 
     net = {}
-    current = input_image
+    current = normalized_input
     for i, name in enumerate(layers):
         kind = name[:4]
         if kind == 'conv':
@@ -59,8 +63,10 @@ def _pool_layer(input):
 
 
 def preprocess(image, mean_pixel):
-    return image - mean_pixel
+    # TODO: Remove mean_pixel from caller.
+    return image
 
 
 def unprocess(image, mean_pixel):
-    return image + mean_pixel
+    # TODO: Remove mean_pixel from caller.
+    return image
