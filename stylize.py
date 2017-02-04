@@ -89,14 +89,14 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         net = vgg.net_preloaded(vgg_weights, image, pooling)
 
         # content loss
-        CONTENT_LAYERS_WEIGHTS = {}
-        CONTENT_LAYERS_WEIGHTS['relu4_2'] = content_weight_blend
-        CONTENT_LAYERS_WEIGHTS['relu5_2'] = 1.0 - content_weight_blend
+        content_layers_weights = {}
+        content_layers_weights['relu4_2'] = content_weight_blend
+        content_layers_weights['relu5_2'] = 1.0 - content_weight_blend
         
         content_loss = 0
         content_losses = []
         for content_layer in CONTENT_LAYERS:
-            content_losses.append(CONTENT_LAYERS_WEIGHTS[content_layer] * content_weight * (2 * tf.nn.l2_loss(
+            content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
                     net[content_layer] - content_features[content_layer]) /
                     content_features[content_layer].size))
         content_loss += reduce(tf.add, content_losses)
