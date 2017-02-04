@@ -10,7 +10,7 @@ from stylize import stylize
 import math
 from argparse import ArgumentParser
 
-from matplotlib import pyplot as plt
+from PIL import Image
 
 import tensorflow as tf
 
@@ -215,7 +215,7 @@ def imread(path):
 
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
-    plt.imsave(path, img)
+    Image.fromarray(img).save(path, quality=95)
 
 def rgb2yuv(rgb):
     """
