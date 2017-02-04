@@ -37,17 +37,17 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
     vgg_weights, vgg_mean_pixel = vgg.load_net(network)
     
     layer_weight = 1.0
-    STYLE_LAYERS_WEIGHTS = {}
+    style_layers_weights = {}
     for style_layer in STYLE_LAYERS:
-        STYLE_LAYERS_WEIGHTS[style_layer] = layer_weight
+        style_layers_weights[style_layer] = layer_weight
         layer_weight *= style_layer_weight_exp
     
     # normalize style layer weights
     layer_weights_sum = 0
     for style_layer in STYLE_LAYERS:
-        layer_weights_sum += STYLE_LAYERS_WEIGHTS[style_layer]
+        layer_weights_sum += style_layers_weights[style_layer]
     for style_layer in STYLE_LAYERS:
-        STYLE_LAYERS_WEIGHTS[style_layer] /= layer_weights_sum
+        style_layers_weights[style_layer] /= layer_weights_sum
     
     # compute content features in feedforward mode
     g = tf.Graph()
@@ -110,7 +110,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, iterations,
                 feats = tf.reshape(layer, (-1, number))
                 gram = tf.matmul(tf.transpose(feats), feats) / size
                 style_gram = style_features[i][style_layer]
-                style_losses.append(STYLE_LAYERS_WEIGHTS[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+                style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
 
         # total variation denoising
