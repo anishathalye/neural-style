@@ -27,7 +27,7 @@ EPSILON = 1e-08
 STYLE_SCALE = 1.0
 ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
-PRESERVE_COLORS = 0
+PRESERVE_COLORS = False
 POOLING = 'max'
 
 def build_parser():
@@ -100,9 +100,8 @@ def build_parser():
     parser.add_argument('--initial-noiseblend', type=float,
             dest='initial_noiseblend', help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)',
             metavar='INITIAL_NOISEBLEND')
-    parser.add_argument('--preserve-colors', type=int,
-            dest='preserve_colors', help='style-only transfer (preserving colors): 1 if color transfer is not needed (default %(default)s)',
-            metavar='PRESERVE_COLORS', default=PRESERVE_COLORS)
+    parser.add_argument('--preserve-colors', action='store_true',
+            dest='preserve_colors', help='style-only transfer (preserving colors) - if color transfer is not needed')
     parser.add_argument('--pooling',
             dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
             metavar='POOLING', default=POOLING)
@@ -185,7 +184,7 @@ def main():
             if options.checkpoint_output:
                 output_file = options.checkpoint_output % iteration
         else:
-            if options.preserve_colors == 1:
+            if options.preserve_colors == True:
                 original_image = tf.placeholder("float", [1, content_image.shape[0], content_image.shape[1], content_image.shape[2]])
                 styled_image = tf.placeholder("float", [1, image.shape[0], image.shape[1], image.shape[2]])            
 
