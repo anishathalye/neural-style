@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 import scipy.io
 
-vgg19_layers = (
+VGG19_LAYERS = (
     'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
 
     'conv2_1', 'relu2_1', 'conv2_2', 'relu2_2', 'pool2',
@@ -29,7 +29,7 @@ def load_net(data_path):
 def net_preloaded(weights, input_image, pooling):
     net = {}
     current = input_image
-    for i, name in enumerate(vgg19_layers):
+    for i, name in enumerate(VGG19_LAYERS):
         kind = name[:4]
         if kind == 'conv':
             kernels, bias = weights[i][0][0][0][0]
@@ -44,7 +44,7 @@ def net_preloaded(weights, input_image, pooling):
             current = _pool_layer(current, pooling)
         net[name] = current
 
-    assert len(net) == len(vgg19_layers)
+    assert len(net) == len(VGG19_LAYERS)
     return net
 
 def _conv_layer(input, weights, bias):
