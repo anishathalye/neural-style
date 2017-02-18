@@ -110,7 +110,7 @@ def stylize(network, initial, content, styles, iterations,
         best_loss = float('inf')
         best = None
         with tf.Session() as sess:
-            sess.run(tf.initialize_all_variables())
+            sess.run(tf.global_variables_initializer())
             for i in range(iterations):
                 last_step = (i == iterations - 1)
                 print_progress(i, last=last_step)
