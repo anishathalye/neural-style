@@ -144,7 +144,7 @@ def imread(path):
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img,img,img))
-    elif len(img.shape) == 4:
+    elif img.shape[2] == 4:
         # PNG with alpha channel
         img = img[:,:,:3]
     return img
