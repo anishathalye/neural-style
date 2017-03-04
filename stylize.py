@@ -92,6 +92,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         content_layers_weights = {}
         content_layers_weights['relu4_2'] = content_weight_blend
         content_layers_weights['relu5_2'] = 1.0 - content_weight_blend
+        
         content_loss = 0
         content_losses = []
         for content_layer in CONTENT_LAYERS:
@@ -99,6 +100,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     net[content_layer] - content_features[content_layer]) /
                     content_features[content_layer].size))
         content_loss += reduce(tf.add, content_losses)
+        
         # style loss
         style_loss = 0
         for i in range(len(styles)):
