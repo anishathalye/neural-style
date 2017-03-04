@@ -31,6 +31,7 @@ value is 1.0 - all layers treated equally. Somewhat extreme examples of what you
 
 ![--style-layer-weight-exp 0.2](examples/tweaks/swe02.jpg)
 ![--style-layer-weight-exp 2.0](examples/tweaks/swe20.jpg)
+
 (left: 0.2 - finer features style transfer; right: 2.0 - coarser features style trasnfer)
 
 `--content-weight-blend` specifies the coefficient of content transfer layers. Default value -
@@ -39,6 +40,7 @@ in range [0.0; 1.0].
 
 ![--content-weight-blend 1.0](examples/tweaks/cwe10_default.jpg)
 ![--content-weight-blend 0.1](examples/tweaks/cwe01.jpg)
+
 (left: 1.0 - default value; right: 0.1 - more abstract picture)
 
 `--pooling` allows to select which pooling layers to use (specify either `max` or `avg`).
@@ -49,6 +51,7 @@ lower-freqency detail level:
 
 ![--pooling max](examples/tweaks/swe14_pmax.jpg)
 ![--pooling avg](examples/tweaks/swe14_pavg.jpg)
+
 (left: max pooling; right: average pooling)
 
 `--preserve-colors` boolean command line argument adds post-processing step, which
@@ -57,6 +60,7 @@ space), thus producing color-preserving style trasnfer:
 
 ![--pooling max](examples/tweaks/swe14_pmax.jpg)
 ![--pooling max](examples/tweaks/swe14_pmax_pcyuv.jpg)
+
 (left: original stylized image; right: color-preserving style transfer)
 
 ## Example 1
