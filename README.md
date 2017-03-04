@@ -22,6 +22,43 @@ Use `--checkpoint-output` and `--checkpoint-iterations` to save checkpoint image
 
 Use `--iterations` to change the number of iterations (default 1000).  For a 512×512 pixel content file, 1000 iterations take 2.5 minutes on a GeForce GTX Titan X GPU, or 90 minutes on an Intel Core i7-5930K CPU.
 
+## Tweaking
+
+`--style-layer-weight-exp` command line argument could be used to tweak how "abstract"
+the style transfer should be. Lower values mean that style transfer of a finer features
+will be favored over style transfer of a more coarse features, and vice versa. Default
+value is 1.0 - all layers treated equally. Somewhat extreme examples of what you can achieve:
+
+![--style-layer-weight-exp 0.2](examples/tweaks/swe02.jpg)
+![--style-layer-weight-exp 2.0](examples/tweaks/swe20.jpg)
+(left: 0.2 - finer features style transfer; right: 2.0 - coarser features style trasnfer)
+
+`--content-weight-blend` specifies the coefficient of content transfer layers. Default value -
+1.0, style transfer tries to preserve finer grain content details. The value should be
+in range [0.0; 1.0].
+
+![--content-weight-blend 1.0](examples/tweaks/cwe10_default.jpg)
+![--content-weight-blend 0.1](examples/tweaks/cwe01.jpg)
+(left: 1.0 - default value; right: 0.1 - more abstract picture)
+
+`--pooling` allows to select which pooling layers to use (specify either `max` or `avg`).
+Original VGG topology uses max pooling, but the [style transfer paper][paper] suggests
+replacing it with average pooling. The outputs are perceptually differnt, max pool in
+general tends to have finer detail style trasnfer, but could have troubles at
+lower-freqency detail level:
+
+![--pooling max](examples/tweaks/swe14_pmax.jpg)
+![--pooling avg](examples/tweaks/swe14_pavg.jpg)
+(left: max pooling; right: average pooling)
+
+`--preserve-colors` boolean command line argument adds post-processing step, which
+combines colors from the original image and luma from the stylized image (YCbCr color
+space), thus producing color-preserving style trasnfer:
+
+![--pooling max](examples/tweaks/swe14_pmax.jpg)
+![--pooling max](examples/tweaks/swe14_pmax_pcyuv.jpg)
+(left: original stylized image; right: color-preserving style transfer)
+
 ## Example 1
 
 Running it for 500-2000 iterations seems to produce nice results. With certain
