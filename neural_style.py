@@ -112,6 +112,9 @@ def main():
     if not os.path.isfile(options.network):
         parser.error("Network %s does not exist. (Did you forget to download it?)" % options.network)
 
+    if options.output and not is_path_writeable(options.output):
+        parser.error('Output path not writeable: ' + options.output)
+
     content_image = imread(options.content)
     style_images = [imread(style) for style in options.styles]
 
@@ -200,7 +203,19 @@ def imread(path):
 
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
-    Image.fromarray(img).save(path, quality=95)
+    im_obj = Image.fromarray(img)
+    try:
+        im_obj.save(path, quality=95)
+    except KeyError:
+        fallback_path = path + '.png'
+        print('Invalid image extension, saving instead to: ' + fallback_path)
+        im_obj.save(fallback_path)
+
+
+def is_path_writeable(path):
+    dirname = os.path.dirname(path)
+    return os.access(dirname, os.W_OK | os.X_OK)
+
 
 if __name__ == '__main__':
     main()
