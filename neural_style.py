@@ -1,16 +1,14 @@
 # Copyright (c) 2015-2017 Anish Athalye. Released under GPLv3.
 
+import math
 import os
+from argparse import ArgumentParser
 
 import numpy as np
 import scipy.misc
+from PIL import Image
 
 from stylize import stylize
-
-import math
-from argparse import ArgumentParser
-
-from PIL import Image
 
 # default arguments
 CONTENT_WEIGHT = 5e0
