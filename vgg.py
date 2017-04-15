@@ -21,6 +21,8 @@ VGG19_LAYERS = (
 
 def load_net(data_path):
     data = scipy.io.loadmat(data_path)
+    if not all(i in data for i in ('layers', 'classes', 'normalization')):
+        raise ValueError("You're using the wrong VGG19 data. Please follow the instructions in the README to download the correct data.")
     mean = data['normalization'][0][0][0]
     mean_pixel = np.mean(mean, axis=(0, 1))
     weights = data['layers'][0]
