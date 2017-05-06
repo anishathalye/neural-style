@@ -149,7 +149,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             if (print_iterations and print_iterations != 0):
                 print_progress()
             for i in range(iterations):
-                stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
+                stderr.write('Iteration %4d/%4d  ||  content loss: %g  ||  style loss: %g\n' % (i + 1, iterations, content_loss.eval(), style_loss.eval()))
                 train_step.run()
 
                 last_step = (i == iterations - 1)
