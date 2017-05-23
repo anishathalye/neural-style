@@ -18,6 +18,8 @@ except NameError:
     from functools import reduce
 
 
+import time
+
 def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
         learning_rate, beta1, beta2, epsilon, pooling,
@@ -31,6 +33,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
     :rtype: iterator[tuple[int|None,image]]
     """
+    # get start time
+    start_time = time.time()
     shape = (1,) + content.shape
     style_shapes = [(1,) + style.shape for style in styles]
     content_features = {}
@@ -134,6 +138,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             stderr.write('    style loss: %g\n' % style_loss.eval())
             stderr.write('       tv loss: %g\n' % tv_loss.eval())
             stderr.write('    total loss: %g\n' % loss.eval())
+            stderr.write('       runtime: %s\n' % (time.time() - start_time))
 
         # optimization
         best_loss = float('inf')
@@ -144,7 +149,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             if (print_iterations and print_iterations != 0):
                 print_progress()
             for i in range(iterations):
-                stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
+                stderr.write('Iteration %4d/%4d  ||  content loss: %g  ||  style loss: %g\n' % (i + 1, iterations, content_loss.eval(), style_loss.eval()))
                 train_step.run()
 
                 last_step = (i == iterations - 1)
