@@ -104,16 +104,14 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         # style loss
         style_loss = 0
         for i in range(len(styles)):
-            style_losses = []
-            for style_layer in STYLE_LAYERS:
-                layer = net[style_layer]
-                _, height, width, number = map(lambda i: i.value, layer.get_shape())
-                size = height * width * number
-                feats = tf.reshape(layer, (-1, number))
-                gram = tf.matmul(tf.transpose(feats), feats) / size
-                style_gram = style_features[i][style_layer]
-                style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
-            style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
+            layer = net[STYLE_LAYERS[i]]
+            _, height, width, number = map(lambda i: i.value, layer.get_shape())
+            size = height * width * number
+            feats = tf.reshape(layer, (-1, number))
+            gram = tf.matmul(tf.transpose(feats), feats) / size
+            style_gram = style_features[i][STYLE_LAYERS[i]]
+            style_losses = (2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+            style_loss += style_weight * style_blend_weights[i] * style_losses
 
         # total variation denoising
         tv_y_size = _tensor_size(image[:,1:,:,:])

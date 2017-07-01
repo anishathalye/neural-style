@@ -34,7 +34,7 @@ def build_parser():
             metavar='CONTENT', required=True)
     parser.add_argument('--styles',
             dest='styles',
-            nargs='+', help='one or more style images',
+            nargs='+', help='one to five style images',
             metavar='STYLE', required=True)
     parser.add_argument('--output',
             dest='output', help='output path',
@@ -113,7 +113,16 @@ def main():
         parser.error("Network %s does not exist. (Did you forget to download it?)" % options.network)
 
     content_image = imread(options.content)
-    style_images = [imread(style) for style in options.styles]
+    assert len(options.styles) <= 5
+    styles = options.styles
+    if len(options.styles) < 5:
+        add = 5-len(options.styles)
+        for i in range(add):
+            styles.append(options.styles[-1])
+    print(styles)
+    style_images = [imread(style) for style in styles]
+
+
 
     width = options.width
     if width is not None:
