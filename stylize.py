@@ -20,7 +20,7 @@ except NameError:
 
 def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
-        learning_rate, beta1, beta2, epsilon, pooling,
+        learning_rate, beta1, beta2, epsilon, pooling, optimizer,
         print_iterations=None, checkpoint_iterations=None):
     """
     Stylize images.
@@ -127,8 +127,11 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         loss = content_loss + style_loss + tv_loss
 
         # optimizer setup
-        train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
-
+        if optimizer == 'adam':
+            train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
+        elif optimizer == 'lbfgs':
+            train_step = tf.contrib.opt.ScipyOptimizerInterface(
+                            loss, method='L-BFGS-B', options={'maxiter': 100})
         def print_progress():
             stderr.write('  content loss: %g\n' % content_loss.eval())
             stderr.write('    style loss: %g\n' % style_loss.eval())
@@ -145,7 +148,10 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 print_progress()
             for i in range(iterations):
                 stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
-                train_step.run()
+                if optimizer == 'adam':
+                    train_step.run()
+                elif optimizer == 'lbfgs':
+                    train_step.minimize(sess)
 
                 last_step = (i == iterations - 1)
                 if last_step or (print_iterations and i % print_iterations == 0):

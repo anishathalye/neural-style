@@ -26,6 +26,7 @@ STYLE_SCALE = 1.0
 ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 POOLING = 'max'
+OPTIMIZER = 'adam'
 
 def build_parser():
     parser = ArgumentParser()
@@ -102,6 +103,9 @@ def build_parser():
     parser.add_argument('--pooling',
             dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
             metavar='POOLING', default=POOLING)
+    parser.add_argument('--optimizer',
+            dest='optimizer', help='loss minimization optimizer: adam or lbfgs (default %(default)s)',
+            metavar='OPTIMIZER', default=OPTIMIZER)
     return parser
 
 
@@ -173,6 +177,7 @@ def main():
         beta2=options.beta2,
         epsilon=options.epsilon,
         pooling=options.pooling,
+        optimizer=options.optimizer,
         print_iterations=options.print_iterations,
         checkpoint_iterations=options.checkpoint_iterations
     ):
