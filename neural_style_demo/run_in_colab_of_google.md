@@ -109,3 +109,7 @@ ValueError                                Traceback (most recent call last)
 
 ValueError: The specified path: /content/vgg_19.ckpt is a file. Please specify only the path prefix to the checkpoint files.
 ```
+Note:
+
+- this is a bug from tensorflow, coder add bug to resp [#14341](https://github.com/tensorflow/tensorflow/pull/14341)
+- bug was fixed by coder, but [colab]() not update their tensorflow
