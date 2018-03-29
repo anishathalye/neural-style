@@ -6,6 +6,7 @@ import tensorflow as tf
 import numpy as np
 
 from sys import stderr
+import time
 
 from PIL import Image
 
@@ -143,8 +144,22 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             stderr.write('Optimization started...\n')
             if (print_iterations and print_iterations != 0):
                 print_progress()
+            iteration_times = []
+            start = time.time()
             for i in range(iterations):
-                stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
+                iteration_start = time.time()
+                if i > 0:
+                    elapsed = time.time() - start
+                    # take average of last couple steps to get time per iteration
+                    remaining = np.mean(iteration_times[-10:]) * (iterations - i)
+                    stderr.write('Iteration %4d/%4d (%s elapsed, %s remaining)\n' % (
+                        i + 1,
+                        iterations,
+                        hms(elapsed),
+                        hms(remaining)
+                    ))
+                else:
+                    stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
                 train_step.run()
 
                 last_step = (i == iterations - 1)
@@ -196,6 +211,9 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                         img_out
                     )
 
+                iteration_end = time.time()
+                iteration_times.append(iteration_end - iteration_start)
+
 
 def _tensor_size(tensor):
     from operator import mul
@@ -209,3 +227,15 @@ def gray2rgb(gray):
     rgb = np.empty((w, h, 3), dtype=np.float32)
     rgb[:, :, 2] = rgb[:, :, 1] = rgb[:, :, 0] = gray
     return rgb
+
+def hms(seconds):
+    seconds = int(seconds)
+    hours = (seconds // (60 * 60))
+    minutes = (seconds // 60) % 60
+    seconds = seconds % 60
+    if hours > 0:
+        return '%d hr %d min' % (hours, minutes)
+    elif minutes > 0:
+        return '%d min %d sec' % (minutes, seconds)
+    else:
+        return '%d sec' % seconds
