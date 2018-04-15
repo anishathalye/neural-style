@@ -74,7 +74,7 @@ value is 1.0 - all layers treated equally. Somewhat extreme examples of what you
 ![--style-layer-weight-exp 0.2](examples/tweaks/swe02.jpg)
 ![--style-layer-weight-exp 2.0](examples/tweaks/swe20.jpg)
 
-(**left**: 0.2 - finer features style transfer; **right**: 2.0 - coarser features style trasnfer)
+(**left**: 0.2 - finer features style transfer; **right**: 2.0 - coarser features style transfer)
 
 `--content-weight-blend` specifies the coefficient of content transfer layers. Default value -
 1.0, style transfer tries to preserve finer grain content details. The value should be
@@ -88,7 +88,7 @@ in range [0.0; 1.0].
 `--pooling` allows to select which pooling layers to use (specify either `max` or `avg`).
 Original VGG topology uses max pooling, but the [style transfer paper][paper] suggests
 replacing it with average pooling. The outputs are perceptually differnt, max pool in
-general tends to have finer detail style trasnfer, but could have troubles at
+general tends to have finer detail style transfer, but could have troubles at
 lower-freqency detail level:
 
 ![--pooling max](examples/tweaks/swe14_pmax.jpg)
@@ -98,7 +98,7 @@ lower-freqency detail level:
 
 `--preserve-colors` boolean command line argument adds post-processing step, which
 combines colors from the original image and luma from the stylized image (YCbCr color
-space), thus producing color-preserving style trasnfer:
+space), thus producing color-preserving style transfer:
 
 ![--pooling max](examples/tweaks/swe14_pmax.jpg)
 ![--pooling max](examples/tweaks/swe14_pmax_pcyuv.jpg)
