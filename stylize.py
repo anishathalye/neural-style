@@ -1,8 +1,11 @@
 # Copyright (c) 2015-2018 Anish Athalye. Released under GPLv3.
 
+import os
 import vgg
 
 import tensorflow as tf
+# https://stackoverflow.com/a/42121886
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import numpy as np
 
 from sys import stderr
