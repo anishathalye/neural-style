@@ -1,17 +1,17 @@
 # Copyright (c) 2015-2018 Anish Athalye. Released under GPLv3.
 
-import vgg
-
-import tensorflow as tf
-import numpy as np
-
-from sys import stderr
 import time
 
 from PIL import Image
+import numpy as np
+import tensorflow as tf
+
+import vgg
+
 
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
+
 
 try:
     reduce
@@ -131,17 +131,17 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
 
         def print_progress():
-            stderr.write('  content loss: %g\n' % content_loss.eval())
-            stderr.write('    style loss: %g\n' % style_loss.eval())
-            stderr.write('       tv loss: %g\n' % tv_loss.eval())
-            stderr.write('    total loss: %g\n' % loss.eval())
+            print('  content loss: %g' % content_loss.eval())
+            print('    style loss: %g' % style_loss.eval())
+            print('       tv loss: %g' % tv_loss.eval())
+            print('    total loss: %g' % loss.eval())
 
         # optimization
         best_loss = float('inf')
         best = None
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
-            stderr.write('Optimization started...\n')
+            print('Optimization started...')
             if (print_iterations and print_iterations != 0):
                 print_progress()
             iteration_times = []
@@ -152,14 +152,14 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     elapsed = time.time() - start
                     # take average of last couple steps to get time per iteration
                     remaining = np.mean(iteration_times[-10:]) * (iterations - i)
-                    stderr.write('Iteration %4d/%4d (%s elapsed, %s remaining)\n' % (
+                    print('Iteration %4d/%4d (%s elapsed, %s remaining)' % (
                         i + 1,
                         iterations,
                         hms(elapsed),
                         hms(remaining)
                     ))
                 else:
-                    stderr.write('Iteration %4d/%4d\n' % (i + 1, iterations))
+                    print('Iteration %4d/%4d' % (i + 1, iterations))
                 train_step.run()
 
                 last_step = (i == iterations - 1)
