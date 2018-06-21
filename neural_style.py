@@ -102,6 +102,8 @@ def build_parser():
     parser.add_argument('--pooling',
             dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
             metavar='POOLING', default=POOLING)
+    parser.add_argument('--overwrite', action='store_true',
+            dest='overwrite', help='write file even if there is already a file with that name')
     return parser
 
 
@@ -155,6 +157,8 @@ def main():
                      "parameter must contain `%s` (e.g. `foo%s.jpg`)")
 
     # try saving a dummy image to the output path to make sure that it's writable
+    if os.path.isfile(options.output) and not options.overwrite:
+        raise IOError("%s already exists, will not replace it without the '--overwrite' flag" % options.output)
     try:
         imsave(options.output, np.zeros((500, 500, 3)))
     except:
