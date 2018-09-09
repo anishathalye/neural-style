@@ -1,17 +1,15 @@
 # Copyright (c) 2015-2018 Anish Athalye. Released under GPLv3.
 
-
-from operator import mul, attrgetter
-from sys import stderr
-import time
-
 import vgg
 
 import tensorflow as tf
 import numpy as np
 
-from PIL import Image
+from sys import stderr
+import time
+from operator import mul, attrgetter
 
+from PIL import Image
 
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
@@ -49,7 +47,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         layer_weight *= style_layer_weight_exp
 
     # normalize style layer weights
-    layer_weights_sum = np.sum(style_layers_weights[style_layer] for style_layer in STYLE_LAYERS)
+    layer_weights_sum = np.sum([style_layers_weights[style_layer] for style_layer in STYLE_LAYERS])
     for style_layer in STYLE_LAYERS:
         style_layers_weights[style_layer] /= layer_weights_sum
 
@@ -63,17 +61,17 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
 
     # compute style features in feedforward mode
-    for style, shape, feature in zip(styles, style_shapes, style_features):
+    for i, style in enumerate(styles):
         g = tf.Graph()
         with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-            image = tf.placeholder('float', shape=shape)
+            image = tf.placeholder('float', shape=style_shapes[i])
             net = vgg.net_preloaded(vgg_weights, image, pooling)
             style_pre = np.array([vgg.preprocess(style, vgg_mean_pixel)])
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
                 gram = np.matmul(features.T, features) / features.size
-                feature[layer] = gram
+                style_features[i][layer] = gram
 
     initial_content_noise_coeff = 1.0 - initial_noiseblend
 
@@ -132,10 +130,11 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
 
         def print_progress():
-            stderr.write('  content loss: %g\n' % content_loss.eval())
-            stderr.write('    style loss: %g\n' % style_loss.eval())
-            stderr.write('       tv loss: %g\n' % tv_loss.eval())
-            stderr.write('    total loss: %g\n' % loss.eval())
+            stderr.write('  content loss: %g\n' \
+                         '    style loss: %g\n' \
+                         '       tv loss: %g\n' \
+                         '    total loss: %g\n' % 
+                         (content_loss.eval(), style_loss.eval(), tv_loss.eval(), loss.eval()))
 
         # optimization
         best_loss = float('inf')
@@ -143,7 +142,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             stderr.write('Optimization started...\n')
-            if print_iterations and print_iterations != 0:
+            if print_iterations:
                 print_progress()
             iteration_times = []
             start = time.time()
