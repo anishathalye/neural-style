@@ -123,9 +123,7 @@ def main():
         content_image = scipy.misc.imresize(content_image, new_shape)
     target_shape = content_image.shape
     for i, im in enumerate(style_images):
-        style_scale = STYLE_SCALE
-        if options.style_scales is not None:
-            style_scale = options.style_scales[i]
+        style_scale = STYLE_SCALE if options.style_scales is None else options.style_scales[i]
         style_images[i] = scipy.misc.imresize(im, style_scale * target_shape[1] / im.shape[1])
 
     style_blend_weights = options.style_blend_weights
