@@ -142,7 +142,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             stderr.write('Optimization started...\n')
-            if (print_iterations and print_iterations != 0):
+            if print_iterations and print_iterations != 0:
                 print_progress()
             iteration_times = []
             start = time.time()

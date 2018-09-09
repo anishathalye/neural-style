@@ -119,25 +119,23 @@ def main():
 
     width = options.width
     if width is not None:
-        new_shape = (int(math.floor(float(content_image.shape[0]) /
-                content_image.shape[1] * width)), width)
+        new_shape = (content_image.shape[0] * width // content_image.shape[1], width)
         content_image = scipy.misc.imresize(content_image, new_shape)
     target_shape = content_image.shape
-    for i in range(len(style_images)):
+    for i, im in enumerate(style_images):
         style_scale = STYLE_SCALE
         if options.style_scales is not None:
             style_scale = options.style_scales[i]
-        style_images[i] = scipy.misc.imresize(style_images[i], style_scale *
-                target_shape[1] / style_images[i].shape[1])
+        style_images[i] = scipy.misc.imresize(im, style_scale * target_shape[1] / im.shape[1])
 
     style_blend_weights = options.style_blend_weights
     if style_blend_weights is None:
         # default is equal weights
-        style_blend_weights = [1.0/len(style_images) for _ in style_images]
+        L = len(style_images)
+        style_blend_weights = np.ones(L) / L
     else:
         total_blend_weight = sum(style_blend_weights)
-        style_blend_weights = [weight/total_blend_weight
-                               for weight in style_blend_weights]
+        style_blend_weights = np.array(style_blend_weights) / total_blend_weight
 
     initial = options.initial
     if initial is not None:
@@ -149,7 +147,7 @@ def main():
         # Neither inital, nor noiseblend is provided, falling back to random generated initial guess
         if options.initial_noiseblend is None:
             options.initial_noiseblend = 1.0
-        if options.initial_noiseblend < 1.0:
+        elif options.initial_noiseblend < 1.0:
             initial = content_image
 
     if options.checkpoint_output and "%s" not in options.checkpoint_output:
@@ -201,10 +199,10 @@ def imread(path):
     img = scipy.misc.imread(path).astype(np.float)
     if len(img.shape) == 2:
         # grayscale
-        img = np.dstack((img,img,img))
+        img = np.dstack((img, img, img))
     elif img.shape[2] == 4:
         # PNG with alpha channel
-        img = img[:,:,:3]
+        img = img[:, :, :3]
     return img
 
 
