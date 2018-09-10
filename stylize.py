@@ -14,11 +14,6 @@ from PIL import Image
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
 
-try:
-    reduce
-except NameError:
-    from functools import reduce
-
 
 def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
         content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
@@ -96,7 +91,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         content_losses = [content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
                     net[content_layer] - content_features[content_layer]) /
                     content_features[content_layer].size) for content_layer in CONTENT_LAYERS]
-        content_loss = reduce(tf.add, content_losses)
+        content_loss = np.sum(content_losses)
 
         # style loss
         style_loss = 0
@@ -110,7 +105,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 gram = tf.matmul(tf.transpose(feats), feats) / size
                 style_gram = feature[style_layer]
                 style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
-            style_loss += style_weight * weight * reduce(tf.add, style_losses)
+            style_loss += weight * np.sum(style_losses)
+        style_loss *= style_weight 
 
         # total variation denoising
         tv_y_size = _tensor_size(image[:,1:,:,:])
