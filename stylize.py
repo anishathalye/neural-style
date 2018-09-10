@@ -7,16 +7,12 @@ import numpy as np
 
 from sys import stderr
 import time
+from operator import attrgetter
 
 from PIL import Image
 
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
-
-try:
-    reduce
-except NameError:
-    from functools import reduce
 
 
 def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
@@ -46,9 +42,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         layer_weight *= style_layer_weight_exp
 
     # normalize style layer weights
-    layer_weights_sum = 0
-    for style_layer in STYLE_LAYERS:
-        layer_weights_sum += style_layers_weights[style_layer]
+    layer_weights_sum = np.sum([style_layers_weights[style_layer] for style_layer in STYLE_LAYERS])
     for style_layer in STYLE_LAYERS:
         style_layers_weights[style_layer] /= layer_weights_sum
 
@@ -62,12 +56,12 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
 
     # compute style features in feedforward mode
-    for i in range(len(styles)):
+    for i, style in enumerate(styles):
         g = tf.Graph()
         with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
             image = tf.placeholder('float', shape=style_shapes[i])
             net = vgg.net_preloaded(vgg_weights, image, pooling)
-            style_pre = np.array([vgg.preprocess(styles[i], vgg_mean_pixel)])
+            style_pre = np.array([vgg.preprocess(style, vgg_mean_pixel)])
             for layer in STYLE_LAYERS:
                 features = net[layer].eval(feed_dict={image: style_pre})
                 features = np.reshape(features, (-1, features.shape[3]))
@@ -90,31 +84,29 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         net = vgg.net_preloaded(vgg_weights, image, pooling)
 
         # content loss
-        content_layers_weights = {}
-        content_layers_weights['relu4_2'] = content_weight_blend
-        content_layers_weights['relu5_2'] = 1.0 - content_weight_blend
+        content_layers_weights = {'relu4_2': content_weight_blend,
+                                  'relu5_2': 1.0 - content_weight_blend}
 
-        content_loss = 0
-        content_losses = []
-        for content_layer in CONTENT_LAYERS:
-            content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
+
+        content_losses = [content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
                     net[content_layer] - content_features[content_layer]) /
-                    content_features[content_layer].size))
-        content_loss += reduce(tf.add, content_losses)
+                    content_features[content_layer].size) for content_layer in CONTENT_LAYERS]
+        content_loss = np.sum(content_losses)
 
         # style loss
         style_loss = 0
-        for i in range(len(styles)):
+        for feature, weight in zip(style_features, style_blend_weights):
             style_losses = []
             for style_layer in STYLE_LAYERS:
                 layer = net[style_layer]
-                _, height, width, number = map(lambda i: i.value, layer.get_shape())
+                _, height, width, number = map(attrgetter('value'), layer.get_shape())
                 size = height * width * number
                 feats = tf.reshape(layer, (-1, number))
                 gram = tf.matmul(tf.transpose(feats), feats) / size
-                style_gram = style_features[i][style_layer]
+                style_gram = feature[style_layer]
                 style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
-            style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
+            style_loss += weight * np.sum(style_losses)
+        style_loss *= style_weight 
 
         # total variation denoising
         tv_y_size = _tensor_size(image[:,1:,:,:])
@@ -131,10 +123,11 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
 
         def print_progress():
-            stderr.write('  content loss: %g\n' % content_loss.eval())
-            stderr.write('    style loss: %g\n' % style_loss.eval())
-            stderr.write('       tv loss: %g\n' % tv_loss.eval())
-            stderr.write('    total loss: %g\n' % loss.eval())
+            stderr.write('  content loss: %g\n' \
+                         '    style loss: %g\n' \
+                         '       tv loss: %g\n' \
+                         '    total loss: %g\n' % 
+                         (content_loss.eval(), style_loss.eval(), tv_loss.eval(), loss.eval()))
 
         # optimization
         best_loss = float('inf')
@@ -142,7 +135,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             stderr.write('Optimization started...\n')
-            if (print_iterations and print_iterations != 0):
+            if print_iterations:
                 print_progress()
             iteration_times = []
             start = time.time()
@@ -174,7 +167,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
                     img_out = vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
 
-                    if preserve_colors and preserve_colors == True:
+                    if preserve_colors is True:
                         original_image = np.clip(content, 0, 255)
                         styled_image = np.clip(img_out, 0, 255)
 
@@ -216,8 +209,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
 
 def _tensor_size(tensor):
-    from operator import mul
-    return reduce(mul, (d.value for d in tensor.get_shape()), 1)
+    return np.prod([d.value for d in tensor.get_shape()])
 
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
@@ -230,9 +222,8 @@ def gray2rgb(gray):
 
 def hms(seconds):
     seconds = int(seconds)
-    hours = (seconds // (60 * 60))
-    minutes = (seconds // 60) % 60
-    seconds = seconds % 60
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
     if hours > 0:
         return '%d hr %d min' % (hours, minutes)
     elif minutes > 0:
