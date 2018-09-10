@@ -7,7 +7,7 @@ import numpy as np
 
 from sys import stderr
 import time
-from operator import mul, attrgetter
+from operator import attrgetter
 
 from PIL import Image
 
@@ -89,17 +89,14 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         net = vgg.net_preloaded(vgg_weights, image, pooling)
 
         # content loss
-        content_layers_weights = {}
-        content_layers_weights['relu4_2'] = content_weight_blend
-        content_layers_weights['relu5_2'] = 1.0 - content_weight_blend
+        content_layers_weights = {'relu4_2': content_weight_blend,
+                                  'relu5_2': 1.0 - content_weight_blend}
 
-        content_loss = 0
-        content_losses = []
-        for content_layer in CONTENT_LAYERS:
-            content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
+
+        content_losses = [content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
                     net[content_layer] - content_features[content_layer]) /
-                    content_features[content_layer].size))
-        content_loss += reduce(tf.add, content_losses)
+                    content_features[content_layer].size) for content_layer in CONTENT_LAYERS]
+        content_loss = reduce(tf.add, content_losses)
 
         # style loss
         style_loss = 0
