@@ -1,19 +1,17 @@
 # Copyright (c) 2015-2018 Anish Athalye. Released under GPLv3.
 
-import os
-import vgg
-
-import tensorflow as tf
-# https://stackoverflow.com/a/42121886
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-import numpy as np
-
 import time
 
 from PIL import Image
+import numpy as np
+import tensorflow as tf
+
+import vgg
+
 
 CONTENT_LAYERS = ('relu4_2', 'relu5_2')
 STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
+
 
 try:
     reduce
