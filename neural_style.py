@@ -12,6 +12,7 @@ from argparse import ArgumentParser
 
 from PIL import Image
 
+
 # default arguments
 CONTENT_WEIGHT = 5e0
 CONTENT_WEIGHT_BLEND = 1
@@ -26,6 +27,7 @@ STYLE_SCALE = 1.0
 ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 POOLING = 'max'
+
 
 def build_parser():
     parser = ArgumentParser()
@@ -108,6 +110,12 @@ def build_parser():
 
 
 def main():
+
+    # https://stackoverflow.com/a/42121886
+    key = 'TF_CPP_MIN_LOG_LEVEL'
+    if key not in os.environ:
+        os.environ[key] = '2'
+
     parser = build_parser()
     options = parser.parse_args()
 
