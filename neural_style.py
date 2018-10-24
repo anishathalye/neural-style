@@ -1,16 +1,15 @@
 # Copyright (c) 2015-2018 Anish Athalye. Released under GPLv3.
 
 import os
+import math
+from argparse import ArgumentParser
+from collections import OrderedDict
 
+from PIL import Image
 import numpy as np
 import scipy.misc
 
 from stylize import stylize
-
-import math
-from argparse import ArgumentParser
-
-from PIL import Image
 
 
 # default arguments
@@ -53,6 +52,12 @@ def build_parser():
     parser.add_argument('--checkpoint-iterations', type=int,
             dest='checkpoint_iterations', help='checkpoint frequency',
             metavar='CHECKPOINT_ITERATIONS')
+    parser.add_argument('--progress-write', default=False, action='store_true',
+            help="write iteration progess data to OUTPUT's dir",
+            required=False)
+    parser.add_argument('--progress-plot', default=False, action='store_true',
+            help="plot iteration progess data to OUTPUT's dir",
+            required=False)
     parser.add_argument('--width', type=int,
             dest='width', help='output width',
             metavar='WIDTH')
@@ -172,7 +177,8 @@ def main():
     except:
         raise IOError('%s is not writable or does not have a valid file extension for an image file' % options.output)
 
-    for iteration, image in stylize(
+    loss_arrs = None
+    for iteration, image, loss_vals in stylize(
         network=options.network,
         initial=initial,
         initial_noiseblend=options.initial_noiseblend,
@@ -192,17 +198,41 @@ def main():
         epsilon=options.epsilon,
         pooling=options.pooling,
         print_iterations=options.print_iterations,
-        checkpoint_iterations=options.checkpoint_iterations
+        checkpoint_iterations=options.checkpoint_iterations,
     ):
-        output_file = None
-        combined_rgb = image
-        if iteration is not None:
-            if options.checkpoint_output:
-                output_file = options.checkpoint_output % iteration
-        else:
-            output_file = options.output
-        if output_file:
-            imsave(output_file, combined_rgb)
+        if (image is not None) and options.checkpoint_output:
+            imsave(options.checkpoint_output % iteration, image)
+        if (loss_vals is not None) \
+                and (options.progress_plot or options.progress_write):
+            if loss_arrs is None:
+                itr = []
+                loss_arrs = OrderedDict((key, []) for key in loss_vals.keys())
+            for key,val in loss_vals.items():
+                loss_arrs[key].append(val)
+            itr.append(iteration)
+
+    imsave(options.output, image)
+
+    if options.progress_write:
+        fn = "{}/progress.txt".format(os.path.dirname(options.output))
+        tmp = np.empty((len(itr), len(loss_arrs)+1), dtype=float)
+        tmp[:,0] = np.array(itr)
+        for ii,val in enumerate(loss_arrs.values()):
+            tmp[:,ii+1] = np.array(val)
+        np.savetxt(fn, tmp, header=' '.join(['itr'] + list(loss_arrs.keys())))
+
+
+    if options.progress_plot:
+        import matplotlib
+        matplotlib.use('Agg')
+        from matplotlib import pyplot as plt
+        fig,ax = plt.subplots()
+        for key, val in loss_arrs.items():
+            ax.semilogy(itr, val, label=key)
+        ax.legend()
+        ax.set_xlabel("iterations")
+        ax.set_ylabel("loss")
+        fig.savefig("{}/progress.png".format(os.path.dirname(options.output)))
 
 
 def imread(path):
