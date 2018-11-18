@@ -2,6 +2,7 @@
 
 import os
 import math
+import re
 from argparse import ArgumentParser
 from collections import OrderedDict
 
@@ -47,11 +48,13 @@ def build_parser():
             dest='print_iterations', help='statistics printing frequency',
             metavar='PRINT_ITERATIONS')
     parser.add_argument('--checkpoint-output',
-            dest='checkpoint_output', help='checkpoint output format, e.g. output%%s.jpg',
-            metavar='OUTPUT')
+            dest='checkpoint_output',
+            help='checkpoint output format, e.g. output_{:05}.jpg or '
+                 'output_%%05d.jpg',
+            metavar='OUTPUT', default=None)
     parser.add_argument('--checkpoint-iterations', type=int,
             dest='checkpoint_iterations', help='checkpoint frequency',
-            metavar='CHECKPOINT_ITERATIONS')
+            metavar='CHECKPOINT_ITERATIONS', default=None)
     parser.add_argument('--progress-write', default=False, action='store_true',
             help="write iteration progess data to OUTPUT's dir",
             required=False)
@@ -69,7 +72,9 @@ def build_parser():
             dest='network', help='path to network parameters (default %(default)s)',
             metavar='VGG_PATH', default=VGG_PATH)
     parser.add_argument('--content-weight-blend', type=float,
-            dest='content_weight_blend', help='content weight blend, conv4_2 * blend + conv5_2 * (1-blend) (default %(default)s)',
+            dest='content_weight_blend',
+            help='content weight blend, conv4_2 * blend + conv5_2 * (1-blend) '
+                 '(default %(default)s)',
             metavar='CONTENT_WEIGHT_BLEND', default=CONTENT_WEIGHT_BLEND)
     parser.add_argument('--content-weight', type=float,
             dest='content_weight', help='content weight (default %(default)s)',
@@ -78,13 +83,17 @@ def build_parser():
             dest='style_weight', help='style weight (default %(default)s)',
             metavar='STYLE_WEIGHT', default=STYLE_WEIGHT)
     parser.add_argument('--style-layer-weight-exp', type=float,
-            dest='style_layer_weight_exp', help='style layer weight exponentional increase - weight(layer<n+1>) = weight_exp*weight(layer<n>) (default %(default)s)',
+            dest='style_layer_weight_exp',
+            help='style layer weight exponentional increase - '
+                 'weight(layer<n+1>) = weight_exp*weight(layer<n>) '
+                 '(default %(default)s)',
             metavar='STYLE_LAYER_WEIGHT_EXP', default=STYLE_LAYER_WEIGHT_EXP)
     parser.add_argument('--style-blend-weights', type=float,
             dest='style_blend_weights', help='style blending weights',
             nargs='+', metavar='STYLE_BLEND_WEIGHT')
     parser.add_argument('--tv-weight', type=float,
-            dest='tv_weight', help='total variation regularization weight (default %(default)s)',
+            dest='tv_weight',
+            help='total variation regularization weight (default %(default)s)',
             metavar='TV_WEIGHT', default=TV_WEIGHT)
     parser.add_argument('--learning-rate', type=float,
             dest='learning_rate', help='learning rate (default %(default)s)',
@@ -102,16 +111,31 @@ def build_parser():
             dest='initial', help='initial image',
             metavar='INITIAL')
     parser.add_argument('--initial-noiseblend', type=float,
-            dest='initial_noiseblend', help='ratio of blending initial image with normalized noise (if no initial image specified, content image is used) (default %(default)s)',
+            dest='initial_noiseblend',
+            help='ratio of blending initial image with normalized noise '
+                 '(if no initial image specified, content image is used) '
+                 '(default %(default)s)',
             metavar='INITIAL_NOISEBLEND')
     parser.add_argument('--preserve-colors', action='store_true',
-            dest='preserve_colors', help='style-only transfer (preserving colors) - if color transfer is not needed')
+            dest='preserve_colors',
+            help='style-only transfer (preserving colors) - if color transfer '
+                 'is not needed')
     parser.add_argument('--pooling',
-            dest='pooling', help='pooling layer configuration: max or avg (default %(default)s)',
+            dest='pooling',
+            help='pooling layer configuration: max or avg (default %(default)s)',
             metavar='POOLING', default=POOLING)
-    parser.add_argument('--overwrite', action='store_true',
-            dest='overwrite', help='write file even if there is already a file with that name')
+    parser.add_argument('--overwrite', action='store_true', dest='overwrite',
+            help='write file even if there is already a file with that name')
     return parser
+
+
+def fmt_imsave(fmt, iteration):
+    if re.match(r'^.*\{.*\}.*$', fmt):
+        return fmt.format(iteration)
+    elif '%' in fmt:
+        return fmt % iteration
+    else:
+        raise ValueError("illegal format string '{}'".format(fmt))
 
 
 def main():
@@ -125,7 +149,19 @@ def main():
     options = parser.parse_args()
 
     if not os.path.isfile(options.network):
-        parser.error("Network %s does not exist. (Did you forget to download it?)" % options.network)
+        parser.error("Network %s does not exist. (Did you forget to "
+                     "download it?)" % options.network)
+
+    if [options.checkpoint_iterations,
+        options.checkpoint_output].count(None) == 1:
+        parser.error("use either both of checkpoint_output and "
+                     "checkpoint_iterations or neither")
+
+    if options.checkpoint_output is not None:
+        if re.match(r'^.*(\{.*\}|%.*).*$', options.checkpoint_output) is None:
+            parser.error("To save intermediate images, the checkpoint_output "
+                         "parameter must contain placeholders (e.g. "
+                         "`foo_{}.jpg` or `foo_%d.jpg`")
 
     content_image = imread(options.content)
     style_images = [imread(style) for style in options.styles]
@@ -159,23 +195,22 @@ def main():
         if options.initial_noiseblend is None:
             options.initial_noiseblend = 0.0
     else:
-        # Neither inital, nor noiseblend is provided, falling back to random generated initial guess
+        # Neither inital, nor noiseblend is provided, falling back to random
+        # generated initial guess
         if options.initial_noiseblend is None:
             options.initial_noiseblend = 1.0
         if options.initial_noiseblend < 1.0:
             initial = content_image
 
-    if options.checkpoint_output and "%s" not in options.checkpoint_output:
-        parser.error("To save intermediate images, the checkpoint output "
-                     "parameter must contain `%s` (e.g. `foo%s.jpg`)")
-
     # try saving a dummy image to the output path to make sure that it's writable
     if os.path.isfile(options.output) and not options.overwrite:
-        raise IOError("%s already exists, will not replace it without the '--overwrite' flag" % options.output)
+        raise IOError("%s already exists, will not replace it without "
+                      "the '--overwrite' flag" % options.output)
     try:
         imsave(options.output, np.zeros((500, 500, 3)))
     except:
-        raise IOError('%s is not writable or does not have a valid file extension for an image file' % options.output)
+        raise IOError('%s is not writable or does not have a valid file '
+                      'extension for an image file' % options.output)
 
     loss_arrs = None
     for iteration, image, loss_vals in stylize(
@@ -200,8 +235,8 @@ def main():
         print_iterations=options.print_iterations,
         checkpoint_iterations=options.checkpoint_iterations,
     ):
-        if (image is not None) and options.checkpoint_output:
-            imsave(options.checkpoint_output % iteration, image)
+        if (image is not None) and (options.checkpoint_output is not None):
+            imsave(fmt_imsave(options.checkpoint_output, iteration), image)
         if (loss_vals is not None) \
                 and (options.progress_plot or options.progress_write):
             if loss_arrs is None:
