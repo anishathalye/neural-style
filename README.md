@@ -116,7 +116,7 @@ space), thus producing color-preserving style transfer:
 
 ### Data Files
 
-* [Pre-trained VGG network][net] (MD5 `8ee3263992981a1d26e73b3ca028a123`) - put it in the top level of this repository, or specify its location using the `--network` option.
+* [Pre-trained VGG network][net] (MD5 `106118b7cf60435e6d8e04f6a6dc3657`) - put it in the top level of this repository, or specify its location using the `--network` option.
 
 ### Dependencies
 
@@ -148,7 +148,7 @@ If you use this implementation in your work, please cite the following:
 Copyright (c) 2015-2018 Anish Athalye. Released under GPLv3. See
 [LICENSE.txt][license] for details.
 
-[net]: http://www.vlfeat.org/matconvnet/models/beta16/imagenet-vgg-verydeep-19.mat
+[net]: http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
 [paper]: http://arxiv.org/pdf/1508.06576v2.pdf
 [l-bfgs]: https://en.wikipedia.org/wiki/Limited-memory_BFGS
 [adam]: http://arxiv.org/abs/1412.6980
