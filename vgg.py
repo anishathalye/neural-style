@@ -38,7 +38,7 @@ def net_preloaded(weights, input_image, pooling):
     for i, name in enumerate(VGG19_LAYERS):
         kind = name[:4]
         if kind == 'conv':
-            if not isinstance(weights[i][0][0][0][0], str):
+            if isinstance(weights[i][0][0][0][0], np.ndarray):
                 # old format
                 kernels, bias = weights[i][0][0][0][0]
             else:
