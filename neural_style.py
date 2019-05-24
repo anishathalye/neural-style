@@ -8,8 +8,8 @@ from collections import OrderedDict
 
 from PIL import Image
 import numpy as np
-import scipy.misc
 import imageio
+import skimage.transform
 
 from stylize import stylize
 
@@ -171,13 +171,13 @@ def main():
     if width is not None:
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                 content_image.shape[1] * width)), width)
-        content_image = imageio.imresize(content_image, new_shape)
+        content_image = skimage.transform.resize(content_image, new_shape)
     target_shape = content_image.shape
     for i in range(len(style_images)):
         style_scale = STYLE_SCALE
         if options.style_scales is not None:
             style_scale = options.style_scales[i]
-        style_images[i] = imageio.imresize(style_images[i], style_scale *
+        style_images[i] = skimage.transform.resize(style_images[i], style_scale *
                 target_shape[1] / style_images[i].shape[1])
 
     style_blend_weights = options.style_blend_weights
@@ -191,7 +191,7 @@ def main():
 
     initial = options.initial
     if initial is not None:
-        initial = imageio.imresize(imread(initial), content_image.shape[:2])
+        initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
         # Initial guess is specified, but not noiseblend - no noise should be blended
         if options.initial_noiseblend is None:
             options.initial_noiseblend = 0.0
