@@ -118,7 +118,7 @@ space), thus producing color-preserving style transfer:
 
 * [Pre-trained VGG network][net] (MD5 `106118b7cf60435e6d8e04f6a6dc3657`) - put it in the top level of this repository, or specify its location using the `--network` option.
 
-### Dependencies
+### Pip installation
 
 You can install Python dependencies using `pip install -r requirements.txt`,
 and it should just work. If you want to install the packages manually, here's a
@@ -128,6 +128,34 @@ list:
 * [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
+
+### Conda installation
+
+You can also use conda to create a separate environment with all of the needed
+dependencies, e.g.:
+
+```sh
+conda create -n neural-styles --file requirements.txt -c defaults
+```
+
+**Note**: If using conda, it is important to specify `-c defaults` so that conda only uses packages from
+the default repos, and not from conda-forge, as their are currently 
+[compatibility issues](https://github.com/ContinuumIO/anaconda-issues/issues/9747) 
+with the conda-forge packages with respect to GPU detection.
+
+## Testing for GPU support
+
+In order to ensure that tensorflow is properly detecting available GPUs, you can use the 
+[tensorflow.device_lib.list_local_devices()](https://stackoverflow.com/a/38580201/554531)
+function:
+
+```py
+from tensorflow.python.client import device_lib
+local_device_protos = device_lib.list_local_devices()
+print([x.name for x in local_device_protos if x.device_type == "GPU"])
+```
+
+(source: [link](https://stackoverflow.com/a/38580201/554531))
 
 ## Citation
 
