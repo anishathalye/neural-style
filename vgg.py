@@ -4,6 +4,12 @@ import tensorflow as tf
 import numpy as np
 import scipy.io
 
+# work-around for more recent versions of tensorflow
+# https://github.com/tensorflow/tensorflow/issues/24496
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
+
 VGG19_LAYERS = (
     'conv1_1', 'relu1_1', 'conv1_2', 'relu1_2', 'pool1',
 
