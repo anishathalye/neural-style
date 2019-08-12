@@ -94,7 +94,7 @@ in range [0.0; 1.0].
 
 `--pooling` allows to select which pooling layers to use (specify either `max` or `avg`).
 Original VGG topology uses max pooling, but the [style transfer paper][paper] suggests
-replacing it with average pooling. The outputs are perceptually differnt, max pool in
+replacing it with average pooling. The outputs are perceptually different, max pool in
 general tends to have finer detail style transfer, but could have troubles at
 lower-freqency detail level:
 
