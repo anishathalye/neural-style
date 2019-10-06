@@ -1,4 +1,4 @@
 numpy
 Pillow  # provides PIL
 scipy==1.1
-tensorflow-gpu >= 1.0  # installs tensorflow with GPU support, should still work even without GPU
+tensorflow-gpu >= 1.0,<2.0  # installs tensorflow with GPU support, should still work even without GPU
