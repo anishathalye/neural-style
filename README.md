@@ -148,7 +148,7 @@ If you use this implementation in your work, please cite the following:
 Copyright (c) 2015-2019 Anish Athalye. Released under GPLv3. See
 [LICENSE.txt][license] for details.
 
-[net]: http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
+[net]: https://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
 [paper]: http://arxiv.org/pdf/1508.06576v2.pdf
 [l-bfgs]: https://en.wikipedia.org/wiki/Limited-memory_BFGS
 [adam]: http://arxiv.org/abs/1412.6980
