@@ -1,4 +1,4 @@
-# neural-style [[![Build Status](https://travis-ci.com/anishathalye/neural-style.svg?branch=master)](https://travis-ci.com/anishathalye/neural-style)]
+# neural-style [![Build Status](https://github.com/anishathalye/neural-style/workflows/CI/badge.svg)](https://github.com/anishathalye/neural-style/actions?query=workflow%3ACI)
 
 An implementation of [neural style][paper] in TensorFlow.
 
