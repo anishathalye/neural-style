@@ -129,6 +129,44 @@ list:
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
 
+## Requirements
+
+Tool can be used within `docker` image. See [docker.com](https://www.docker.com/get-started) on how to get started with
+containerized applications.
+
+### Building a docker image
+
+With `docker` command-line tool install and ready, run the following command in the root of directory
+to build the docker image for `neural-style`:
+
+```commandline
+docker build -t neural-style .
+```
+
+The command will build image locally and tag it as `neural-style:latest`.
+All `neural-style` dependencies like `Python`, `TensorFlow` and 
+`imagenet-vgg-verydeep` model will be included as part of the build.
+Image build does not include installation and configuration of CUDA, GPU devices
+
+### Using docker image
+
+Once docker image is built, `neural-style` can be run using the following command-line:
+
+```commandline
+docker run -v <examples directory>:/data neural-style --content /data/<content file> 
+--styles /data/<style file> --output /data/<output file>
+```
+
+Where `<examples directory>` is replaced to directory path containing all the sample data and
+mounted to `/data` directory (or any other directory if specified otherwise). From that point, all files will be found 
+under `/data` directory when running the application in docker container
+
+Example command-line: 
+```commandline
+docker run -v /home/user/neural-style/examples:/data neural-style --content /data/1-content.jpg 
+--styles /data/1-style.jpg --output /data/my-output.jpg
+```
+
 ## Citation
 
 If you use this implementation in your work, please cite the following:
