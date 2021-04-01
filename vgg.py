@@ -1,4 +1,4 @@
-# Copyright (c) 2015-2019 Anish Athalye. Released under GPLv3.
+# Copyright (c) 2015-2021 Anish Athalye. Released under GPLv3.
 
 import tensorflow as tf
 import numpy as np

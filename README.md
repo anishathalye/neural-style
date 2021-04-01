@@ -145,7 +145,7 @@ If you use this implementation in your work, please cite the following:
 
 ## License
 
-Copyright (c) 2015-2019 Anish Athalye. Released under GPLv3. See
+Copyright (c) 2015-2021 Anish Athalye. Released under GPLv3. See
 [LICENSE.txt][license] for details.
 
 [net]: https://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
