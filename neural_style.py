@@ -12,6 +12,9 @@ import scipy.misc
 
 from stylize import stylize
 
+import skimage.transform 
+import cv2
+
 
 # default arguments
 CONTENT_WEIGHT = 5e0
@@ -23,7 +26,7 @@ LEARNING_RATE = 1e1
 BETA1 = 0.9
 BETA2 = 0.999
 EPSILON = 1e-08
-STYLE_SCALE = 1.0
+STYLE_SCALE = 1
 ITERATIONS = 1000
 VGG_PATH = 'imagenet-vgg-verydeep-19.mat'
 POOLING = 'max'
@@ -170,14 +173,15 @@ def main():
     if width is not None:
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                 content_image.shape[1] * width)), width)
-        content_image = scipy.misc.imresize(content_image, new_shape)
+        content_image = skimage.transform.resize(content_image, new_shape)
     target_shape = content_image.shape
     for i in range(len(style_images)):
         style_scale = STYLE_SCALE
         if options.style_scales is not None:
             style_scale = options.style_scales[i]
-        style_images[i] = scipy.misc.imresize(style_images[i], style_scale *
-                target_shape[1] / style_images[i].shape[1])
+
+        tmp=(style_scale * target_shape[0] / style_images[i].shape[0], style_scale * target_shape[1] / style_images[i].shape[1])
+        style_images[i] = skimage.transform.resize(style_images[i], tuple(map(int,tmp)))
 
     style_blend_weights = options.style_blend_weights
     if style_blend_weights is None:
@@ -190,7 +194,7 @@ def main():
 
     initial = options.initial
     if initial is not None:
-        initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
+        initial = skimage.transform.resize(imread(initial), content_image.shape[:2])
         # Initial guess is specified, but not noiseblend - no noise should be blended
         if options.initial_noiseblend is None:
             options.initial_noiseblend = 0.0
@@ -271,7 +275,7 @@ def main():
 
 
 def imread(path):
-    img = scipy.misc.imread(path).astype(np.float)
+    img = cv2.imread(path).astype(np.float)
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img,img,img))
