@@ -21,7 +21,7 @@ CONTENT_WEIGHT = 5e0
 CONTENT_WEIGHT_BLEND = 1
 STYLE_WEIGHT = 5e2
 TV_WEIGHT = 1e2
-STYLE_LAYER_WEIGHT_EXP = 1
+STYLE_LAYER_WEIGHT_EXP = 0.2
 LEARNING_RATE = 1e1
 BETA1 = 0.9
 BETA2 = 0.999
@@ -180,9 +180,13 @@ def main():
         if options.style_scales is not None:
             style_scale = options.style_scales[i]
 
-        tmp=(style_scale * target_shape[0] / style_images[i].shape[0], style_scale * target_shape[1] / style_images[i].shape[1])
-        style_images[i] = skimage.transform.resize(style_images[i], tuple(map(int,tmp)))
 
+
+        tmp=(style_scale * target_shape[0] / style_images[i].shape[0])
+        dim=(int(tmp*style_images[i].shape[0]) , int(tmp*style_images[i].shape[1]))
+        #print(dim)
+
+        style_images[i] =cv2.resize(style_images[i], dim)
     style_blend_weights = options.style_blend_weights
     if style_blend_weights is None:
         # default is equal weights
@@ -275,7 +279,8 @@ def main():
 
 
 def imread(path):
-    img = cv2.imread(path).astype(np.float)
+    img = cv2.imread(path)
+    img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB).astype(np.float)
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img,img,img))
