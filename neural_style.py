@@ -8,7 +8,6 @@ from collections import OrderedDict
 
 from PIL import Image
 import numpy as np
-import scipy.misc
 
 from stylize import stylize
 
@@ -170,13 +169,13 @@ def main():
     if width is not None:
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                 content_image.shape[1] * width)), width)
-        content_image = scipy.misc.imresize(content_image, new_shape)
+        content_image = imresize(content_image, new_shape)
     target_shape = content_image.shape
     for i in range(len(style_images)):
         style_scale = STYLE_SCALE
         if options.style_scales is not None:
             style_scale = options.style_scales[i]
-        style_images[i] = scipy.misc.imresize(style_images[i], style_scale *
+        style_images[i] = imresize(style_images[i], style_scale *
                 target_shape[1] / style_images[i].shape[1])
 
     style_blend_weights = options.style_blend_weights
@@ -190,7 +189,7 @@ def main():
 
     initial = options.initial
     if initial is not None:
-        initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
+        initial = imresize(imread(initial), content_image.shape[:2])
         # Initial guess is specified, but not noiseblend - no noise should be blended
         if options.initial_noiseblend is None:
             options.initial_noiseblend = 0.0
@@ -271,7 +270,7 @@ def main():
 
 
 def imread(path):
-    img = scipy.misc.imread(path).astype(np.float)
+    img = np.array(Image.open(path)).astype(np.float)
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img,img,img))
@@ -284,6 +283,16 @@ def imread(path):
 def imsave(path, img):
     img = np.clip(img, 0, 255).astype(np.uint8)
     Image.fromarray(img).save(path, quality=95)
+
+
+def imresize(arr, size):
+    img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
+    if isinstance(size, tuple):
+        height, width = size
+    else:
+        width = int(img.width * size)
+        height = int(img.height * size)
+    return np.array(img.resize((width, height)))
 
 if __name__ == '__main__':
     main()
