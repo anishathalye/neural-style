@@ -24,13 +24,6 @@ your web browser without installing any software (using
 
 Run `python neural_style.py --help` to see a list of all options.
 
-If you are running this project on [Floydhub](https://www.floydhub.com) you can use the following syntax (this pulls in the pre-trained VGG network automatically):
-
-`floyd run --gpu --env tensorflow-1.3
---data  floydhub/datasets/imagenet-vgg-verydeep-19/3:vgg
-"python neural_style.py --network /vgg/imagenet-vgg-verydeep-19.mat --content <content file> --styles <style file> --output <output file>"`
-
-
 Use `--checkpoint-output` and `--checkpoint-iterations` to save checkpoint images.
 
 Use `--iterations` to change the number of iterations (default 1000).  For a 512×512 pixel content file, 1000 iterations take 60 seconds on a GTX 1080 Ti, 90 seconds on a Maxwell Titan X, or 60 minutes on an Intel Core i7-5930K. Using a GPU is highly recommended due to the huge speedup.
