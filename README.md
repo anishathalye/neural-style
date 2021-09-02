@@ -9,15 +9,6 @@ TensorFlow doesn't support [L-BFGS][l-bfgs] (which is what the original authors
 used), so we use [Adam][adam]. This may require a little bit more
 hyperparameter tuning to get nice results.
 
-## Related Projects
-
-See [here][lengstrom-fast-style-transfer] for an implementation of [fast
-(feed-forward) neural style][fast-neural-style] in TensorFlow.
-
-**[Try neural style](https://tenso.rs/demos/fast-neural-style/) client-side in
-your web browser without installing any software (using
-[TensorFire](https://tenso.rs/)).**
-
 ## Running
 
 `python neural_style.py --content <content file> --styles <style file> --output <output file>`
@@ -121,6 +112,15 @@ list:
 * [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
 * [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
 * [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
+
+## Related Projects
+
+See [here][lengstrom-fast-style-transfer] for an implementation of [fast
+(feed-forward) neural style][fast-neural-style] in TensorFlow.
+
+**[Try neural style](https://tenso.rs/demos/fast-neural-style/) client-side in
+your web browser without installing any software (using
+[TensorFire](https://tenso.rs/)).**
 
 ## Citation
 
