@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [2.7, 3.5, 3.6, 3.7]
+        python: [3.6, 3.7, 3.8]
     name: Python ${{ matrix.python }}
     steps:
       - uses: actions/checkout@v2
