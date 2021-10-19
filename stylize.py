@@ -206,7 +206,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
                     img_out = vgg.unprocess(best.reshape(shape[1:]), vgg_mean_pixel)
 
-                    if preserve_colors and preserve_colors == True:
+                    if preserve_colors:
                         original_image = np.clip(content, 0, 255)
                         styled_image = np.clip(img_out, 0, 255)
 
