@@ -7,13 +7,14 @@ from collections import OrderedDict
 from PIL import Image
 import numpy as np
 import tensorflow.compat.v1 as tf
+
 tf.disable_v2_behavior()
 
 import vgg
 
 
-CONTENT_LAYERS = ('relu4_2', 'relu5_2')
-STYLE_LAYERS = ('relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1')
+CONTENT_LAYERS = ("relu4_2", "relu5_2")
+STYLE_LAYERS = ("relu1_1", "relu2_1", "relu3_1", "relu4_1", "relu5_1")
 
 
 try:
@@ -23,18 +24,36 @@ except NameError:
 
 
 def get_loss_vals(loss_store):
-    return OrderedDict((key, val.eval()) for key,val in loss_store.items())
+    return OrderedDict((key, val.eval()) for key, val in loss_store.items())
 
 
 def print_progress(loss_vals):
-    for key,val in loss_vals.items():
-        print('{:>13s} {:g}'.format(key + ' loss:', val))
+    for key, val in loss_vals.items():
+        print("{:>13s} {:g}".format(key + " loss:", val))
 
 
-def stylize(network, initial, initial_noiseblend, content, styles, preserve_colors, iterations,
-        content_weight, content_weight_blend, style_weight, style_layer_weight_exp, style_blend_weights, tv_weight,
-        learning_rate, beta1, beta2, epsilon, pooling,
-        print_iterations=None, checkpoint_iterations=None):
+def stylize(
+    network,
+    initial,
+    initial_noiseblend,
+    content,
+    styles,
+    preserve_colors,
+    iterations,
+    content_weight,
+    content_weight_blend,
+    style_weight,
+    style_layer_weight_exp,
+    style_blend_weights,
+    tv_weight,
+    learning_rate,
+    beta1,
+    beta2,
+    epsilon,
+    pooling,
+    print_iterations=None,
+    checkpoint_iterations=None,
+):
     """
     Stylize images.
 
@@ -70,8 +89,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
     # compute content features in feedforward mode
     g = tf.Graph()
-    with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-        image = tf.placeholder('float', shape=shape)
+    with g.as_default(), g.device("/cpu:0"), tf.Session() as sess:
+        image = tf.placeholder("float", shape=shape)
         net = vgg.net_preloaded(vgg_weights, image, pooling)
         content_pre = np.array([vgg.preprocess(content, vgg_mean_pixel)])
         for layer in CONTENT_LAYERS:
@@ -80,8 +99,8 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     # compute style features in feedforward mode
     for i in range(len(styles)):
         g = tf.Graph()
-        with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
-            image = tf.placeholder('float', shape=style_shapes[i])
+        with g.as_default(), g.device("/cpu:0"), tf.Session() as sess:
+            image = tf.placeholder("float", shape=style_shapes[i])
             net = vgg.net_preloaded(vgg_weights, image, pooling)
             style_pre = np.array([vgg.preprocess(styles[i], vgg_mean_pixel)])
             for layer in STYLE_LAYERS:
@@ -99,23 +118,31 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
             initial = tf.random_normal(shape) * 0.256
         else:
             initial = np.array([vgg.preprocess(initial, vgg_mean_pixel)])
-            initial = initial.astype('float32')
+            initial = initial.astype("float32")
             noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
-            initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * 0.256) * (1.0 - initial_content_noise_coeff)
+            initial = (initial) * initial_content_noise_coeff + (
+                tf.random_normal(shape) * 0.256
+            ) * (1.0 - initial_content_noise_coeff)
         image = tf.Variable(initial)
         net = vgg.net_preloaded(vgg_weights, image, pooling)
 
         # content loss
         content_layers_weights = {}
-        content_layers_weights['relu4_2'] = content_weight_blend
-        content_layers_weights['relu5_2'] = 1.0 - content_weight_blend
+        content_layers_weights["relu4_2"] = content_weight_blend
+        content_layers_weights["relu5_2"] = 1.0 - content_weight_blend
 
         content_loss = 0
         content_losses = []
         for content_layer in CONTENT_LAYERS:
-            content_losses.append(content_layers_weights[content_layer] * content_weight * (2 * tf.nn.l2_loss(
-                    net[content_layer] - content_features[content_layer]) /
-                    content_features[content_layer].size))
+            content_losses.append(
+                content_layers_weights[content_layer]
+                * content_weight
+                * (
+                    2
+                    * tf.nn.l2_loss(net[content_layer] - content_features[content_layer])
+                    / content_features[content_layer].size
+                )
+            )
         content_loss += reduce(tf.add, content_losses)
 
         # style loss
@@ -129,17 +156,25 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                 feats = tf.reshape(layer, (-1, number))
                 gram = tf.matmul(tf.transpose(feats), feats) / size
                 style_gram = style_features[i][style_layer]
-                style_losses.append(style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size)
+                style_losses.append(
+                    style_layers_weights[style_layer]
+                    * 2
+                    * tf.nn.l2_loss(gram - style_gram)
+                    / style_gram.size
+                )
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
 
         # total variation denoising
-        tv_y_size = _tensor_size(image[:,1:,:,:])
-        tv_x_size = _tensor_size(image[:,:,1:,:])
-        tv_loss = tv_weight * 2 * (
-                (tf.nn.l2_loss(image[:,1:,:,:] - image[:,:shape[1]-1,:,:]) /
-                    tv_y_size) +
-                (tf.nn.l2_loss(image[:,:,1:,:] - image[:,:,:shape[2]-1,:]) /
-                    tv_x_size))
+        tv_y_size = _tensor_size(image[:, 1:, :, :])
+        tv_x_size = _tensor_size(image[:, :, 1:, :])
+        tv_loss = (
+            tv_weight
+            * 2
+            * (
+                (tf.nn.l2_loss(image[:, 1:, :, :] - image[:, : shape[1] - 1, :, :]) / tv_y_size)
+                + (tf.nn.l2_loss(image[:, :, 1:, :] - image[:, :, : shape[2] - 1, :]) / tv_x_size)
+            )
+        )
 
         # total loss
         loss = content_loss + style_loss + tv_loss
@@ -157,21 +192,20 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         # bug, since both constructor syntax variants result in different
         # objects. In 3.6, the order is preserved in dict() in CPython, in 3.7
         # they finally made it part of the language spec. Thank you!
-        loss_store = OrderedDict([('content', content_loss),
-                                  ('style', style_loss),
-                                  ('tv', tv_loss),
-                                  ('total', loss)])
+        loss_store = OrderedDict(
+            [("content", content_loss), ("style", style_loss), ("tv", tv_loss), ("total", loss)]
+        )
 
         # optimizer setup
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
 
         # optimization
-        best_loss = float('inf')
+        best_loss = float("inf")
         best = None
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
-            print('Optimization started...')
-            if (print_iterations and print_iterations != 0):
+            print("Optimization started...")
+            if print_iterations and print_iterations != 0:
                 print_progress(get_loss_vals(loss_store))
             iteration_times = []
             start = time.time()
@@ -181,17 +215,15 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     elapsed = time.time() - start
                     # take average of last couple steps to get time per iteration
                     remaining = np.mean(iteration_times[-10:]) * (iterations - i)
-                    print('Iteration %4d/%4d (%s elapsed, %s remaining)' % (
-                        i + 1,
-                        iterations,
-                        hms(elapsed),
-                        hms(remaining)
-                    ))
+                    print(
+                        "Iteration %4d/%4d (%s elapsed, %s remaining)"
+                        % (i + 1, iterations, hms(elapsed), hms(remaining))
+                    )
                 else:
-                    print('Iteration %4d/%4d' % (i + 1, iterations))
+                    print("Iteration %4d/%4d" % (i + 1, iterations))
                 train_step.run()
 
-                last_step = (i == iterations - 1)
+                last_step = i == iterations - 1
                 if last_step or (print_iterations and i % print_iterations == 0):
                     loss_vals = get_loss_vals(loss_store)
                     print_progress(loss_vals)
@@ -222,10 +254,14 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                         styled_grayscale_rgb = gray2rgb(styled_grayscale)
 
                         # 2
-                        styled_grayscale_yuv = np.array(Image.fromarray(styled_grayscale_rgb.astype(np.uint8)).convert('YCbCr'))
+                        styled_grayscale_yuv = np.array(
+                            Image.fromarray(styled_grayscale_rgb.astype(np.uint8)).convert("YCbCr")
+                        )
 
                         # 3
-                        original_yuv = np.array(Image.fromarray(original_image.astype(np.uint8)).convert('YCbCr'))
+                        original_yuv = np.array(
+                            Image.fromarray(original_image.astype(np.uint8)).convert("YCbCr")
+                        )
 
                         # 4
                         w, h, _ = original_image.shape
@@ -235,11 +271,11 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                         combined_yuv[..., 2] = original_yuv[..., 2]
 
                         # 5
-                        img_out = np.array(Image.fromarray(combined_yuv, 'YCbCr').convert('RGB'))
+                        img_out = np.array(Image.fromarray(combined_yuv, "YCbCr").convert("RGB"))
                 else:
                     img_out = None
 
-                yield i+1 if last_step else i, img_out, loss_vals
+                yield i + 1 if last_step else i, img_out, loss_vals
 
                 iteration_end = time.time()
                 iteration_times.append(iteration_end - iteration_start)
@@ -247,10 +283,13 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
 
 def _tensor_size(tensor):
     from operator import mul
+
     return reduce(mul, (d.value for d in tensor.get_shape()), 1)
 
+
 def rgb2gray(rgb):
-    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
+    return np.dot(rgb[..., :3], [0.299, 0.587, 0.114])
+
 
 def gray2rgb(gray):
     w, h = gray.shape
@@ -258,14 +297,15 @@ def gray2rgb(gray):
     rgb[:, :, 2] = rgb[:, :, 1] = rgb[:, :, 0] = gray
     return rgb
 
+
 def hms(seconds):
     seconds = int(seconds)
-    hours = (seconds // (60 * 60))
+    hours = seconds // (60 * 60)
     minutes = (seconds // 60) % 60
     seconds = seconds % 60
     if hours > 0:
-        return '%d hr %d min' % (hours, minutes)
+        return "%d hr %d min" % (hours, minutes)
     elif minutes > 0:
-        return '%d min %d sec' % (minutes, seconds)
+        return "%d min %d sec" % (minutes, seconds)
     else:
-        return '%d sec' % seconds
+        return "%d sec" % seconds

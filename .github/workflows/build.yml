@@ -5,12 +5,12 @@ on:
   schedule:
     - cron: '0 8 * * 6'
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python: [3.6, 3.7, 3.8]
-    name: Python ${{ matrix.python }}
+    name: "Test: Python ${{ matrix.python }}"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -21,3 +21,9 @@ jobs:
           pip install -r requirements.txt
       - run: wget https://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
       - run: python neural_style.py --content examples/1-content.jpg --styles examples/1-style.jpg --output test-$(date +%s).png --iterations 2
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
