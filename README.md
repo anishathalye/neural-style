@@ -132,7 +132,6 @@ If you use this implementation in your work, please cite the following:
   title = {Neural Style},
   year = {2015},
   howpublished = {\url{https://github.com/anishathalye/neural-style}},
-  note = {commit xxxxxxx}
 }
 ```
 
