@@ -367,7 +367,7 @@ def main():
 
 
 def imread(path):
-    img = np.array(Image.open(path)).astype(np.float)
+    img = np.array(Image.open(path)).astype(np.float32)
     if len(img.shape) == 2:
         # grayscale
         img = np.dstack((img, img, img))
