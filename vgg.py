@@ -1,4 +1,4 @@
-# Copyright (c) 2015-2021 Anish Athalye. Released under GPLv3.
+# Copyright (c) Anish Athalye. Released under GPLv3.
 
 import numpy as np
 import scipy.io
