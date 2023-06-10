@@ -126,7 +126,7 @@ your web browser without installing any software (using
 
 If you use this implementation in your work, please cite the following:
 
-```
+```bibtex
 @misc{athalye2015neuralstyle,
   author = {Anish Athalye},
   title = {Neural Style},
