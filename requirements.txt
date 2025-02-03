@@ -1,4 +1,7 @@
-numpy
-Pillow
-scipy
-tensorflow
+numpy==2.0.2
+Pillow==11.1.0
+scipy==1.15.1
+tensorflow==2.18.0
+# macOS-specific dependencies
+tensorflow-macos>=2.12.0; sys_platform == 'darwin'
+tensorflow-metal>=0.7.0; sys_platform == 'darwin'
