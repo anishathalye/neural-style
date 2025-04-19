@@ -6,10 +6,10 @@ on:
     - cron: '0 8 * * 6'
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python: [3.6, 3.7, 3.8]
+        python: [3.7, 3.8]
     name: "Test: Python ${{ matrix.python }}"
     steps:
       - uses: actions/checkout@v3
