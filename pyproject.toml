@@ -1,9 +1,33 @@
+[project]
+name = "neural-style"
+version = "0.1.0"
+description = "Neural style transfer implementation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file="LICENSE.txt" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "numpy==2.0.2",
+    "Pillow==11.1.0",
+    "scipy==1.15.1",
+    "tensorflow==2.18.0",
+    "tensorflow-macos==2.12.0; sys_platform == 'darwin'",
+    "tensorflow-metal==0.7.0; sys_platform == 'darwin'",
+]
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [tool.black]
-line-length = 100
-exclude = '''
-/(
-   \.git
- | \.github
- | examples
- )/
-'''
+line-length = 88
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
