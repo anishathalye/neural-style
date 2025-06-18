@@ -11,13 +11,21 @@ hyperparameter tuning to get nice results.
 
 ## Running
 
-`python neural_style.py --content <content file> --styles <style file> --output <output file>`
+This project uses the [uv](https://docs.astral.sh/uv/) project and package manager; you can install it by [following these instructions](https://docs.astral.sh/uv/getting-started/installation/) (e.g., installing it with your system package manager, like `brew install uv`).
 
-Run `python neural_style.py --help` to see a list of all options.
+You also need to download [required data files](#requirements).
+
+After that, you can run this program with:
+
+```bash
+uv run neural_style.py --content <content file> --styles <style file> --output <output file>
+```
+
+Run `uv run neural_style.py --help` to see a list of all options.
 
 Use `--checkpoint-output` and `--checkpoint-iterations` to save checkpoint images.
 
-Use `--iterations` to change the number of iterations (default 1000).  For a 512×512 pixel content file, 1000 iterations take 60 seconds on a GTX 1080 Ti, 90 seconds on a Maxwell Titan X, or 60 minutes on an Intel Core i7-5930K. Using a GPU is highly recommended due to the huge speedup.
+Use `--iterations` to change the number of iterations (default 1000). For a 512×512 pixel content file, 1000 iterations take 90 seconds on an M3 MacBook Pro, and significantly less time with a more powerful (e.g., NVIDIA) GPU.
 
 ## Example 1
 
@@ -100,18 +108,7 @@ space), thus producing color-preserving style transfer:
 
 ### Data Files
 
-* [Pre-trained VGG network][net] (MD5 `106118b7cf60435e6d8e04f6a6dc3657`) - put it in the top level of this repository, or specify its location using the `--network` option.
-
-### Dependencies
-
-You can install Python dependencies using `pip install -r requirements.txt`,
-and it should just work. If you want to install the packages manually, here's a
-list:
-
-* [TensorFlow](https://www.tensorflow.org/versions/master/get_started/os_setup.html#download-and-setup)
-* [NumPy](https://github.com/numpy/numpy/blob/master/INSTALL.rst.txt)
-* [SciPy](https://github.com/scipy/scipy/blob/master/INSTALL.rst.txt)
-* [Pillow](http://pillow.readthedocs.io/en/3.3.x/installation.html#installation)
+* [Pre-trained VGG network][net] (SHA256 `abdb57167f82a2a1fbab1e1c16ad9373411883f262a1a37ee5db2e6fb0044695`) - put it in the top level of this repository, or specify its location using the `--network` option.
 
 ## Related Projects
 

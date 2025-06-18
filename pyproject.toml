@@ -1,9 +1,39 @@
-[tool.black]
-line-length = 100
-exclude = '''
-/(
-   \.git
- | \.github
- | examples
- )/
-'''
+[project]
+name = "neural-style"
+version = "0.1.0"
+description = "An implementation of neural style in TensorFlow"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=2.1.3",
+    "pillow>=11.2.1",
+    "scipy>=1.15.3",
+    "tensorflow>=2.19.0",
+    "tensorflow-metal>=1.2.0 ; sys_platform == 'darwin'",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.0",
+]
+
+[tool.ruff]
+line-length = 120
+lint.select = [
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # pyupgrade
+  "UP",
+  # flake8-bugbear
+  "B",
+  # flake8-simplify
+  "SIM",
+  # isort
+  "I",
+  # whitespace at EOL, empty line, and missing newline at EOF
+  "W291",
+  "W292",
+  "W293",
+]

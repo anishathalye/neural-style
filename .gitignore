@@ -1,6 +1,15 @@
-*.mat
-env/
-.idea
-__pycache__
-*.pyc
+.env
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Images
 *.jpg

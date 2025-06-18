@@ -1,26 +1,19 @@
 # Copyright (c) Anish Athalye. Released under GPLv3.
 
-import os
 import time
 from collections import OrderedDict
+from functools import reduce
 
-from PIL import Image
 import numpy as np
 import tensorflow.compat.v1 as tf
-
-tf.disable_v2_behavior()
+from PIL import Image
 
 import vgg
 
+tf.disable_v2_behavior()
 
 CONTENT_LAYERS = ("relu4_2", "relu5_2")
 STYLE_LAYERS = ("relu1_1", "relu2_1", "relu3_1", "relu4_1", "relu5_1")
-
-
-try:
-    reduce
-except NameError:
-    from functools import reduce
 
 
 def get_loss_vals(loss_store):
@@ -114,15 +107,13 @@ def stylize(
     # make stylized image using backpropogation
     with tf.Graph().as_default():
         if initial is None:
-            noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
             initial = tf.random_normal(shape) * 0.256
         else:
             initial = np.array([vgg.preprocess(initial, vgg_mean_pixel)])
             initial = initial.astype("float32")
-            noise = np.random.normal(size=shape, scale=np.std(content) * 0.1)
-            initial = (initial) * initial_content_noise_coeff + (
-                tf.random_normal(shape) * 0.256
-            ) * (1.0 - initial_content_noise_coeff)
+            initial = (initial) * initial_content_noise_coeff + (tf.random_normal(shape) * 0.256) * (
+                1.0 - initial_content_noise_coeff
+            )
         image = tf.Variable(initial)
         net = vgg.net_preloaded(vgg_weights, image, pooling)
 
@@ -157,10 +148,7 @@ def stylize(
                 gram = tf.matmul(tf.transpose(feats), feats) / size
                 style_gram = style_features[i][style_layer]
                 style_losses.append(
-                    style_layers_weights[style_layer]
-                    * 2
-                    * tf.nn.l2_loss(gram - style_gram)
-                    / style_gram.size
+                    style_layers_weights[style_layer] * 2 * tf.nn.l2_loss(gram - style_gram) / style_gram.size
                 )
             style_loss += style_weight * style_blend_weights[i] * reduce(tf.add, style_losses)
 
@@ -192,9 +180,7 @@ def stylize(
         # bug, since both constructor syntax variants result in different
         # objects. In 3.6, the order is preserved in dict() in CPython, in 3.7
         # they finally made it part of the language spec. Thank you!
-        loss_store = OrderedDict(
-            [("content", content_loss), ("style", style_loss), ("tv", tv_loss), ("total", loss)]
-        )
+        loss_store = OrderedDict([("content", content_loss), ("style", style_loss), ("tv", tv_loss), ("total", loss)])
 
         # optimizer setup
         train_step = tf.train.AdamOptimizer(learning_rate, beta1, beta2, epsilon).minimize(loss)
@@ -215,12 +201,9 @@ def stylize(
                     elapsed = time.time() - start
                     # take average of last couple steps to get time per iteration
                     remaining = np.mean(iteration_times[-10:]) * (iterations - i)
-                    print(
-                        "Iteration %4d/%4d (%s elapsed, %s remaining)"
-                        % (i + 1, iterations, hms(elapsed), hms(remaining))
-                    )
+                    print(f"Iteration {i + 1:4d}/{iterations:4d} ({hms(elapsed)} elapsed, {hms(remaining)} remaining)")
                 else:
-                    print("Iteration %4d/%4d" % (i + 1, iterations))
+                    print(f"Iteration {i + 1:4d}/{iterations:4d}")
                 train_step.run()
 
                 last_step = i == iterations - 1
@@ -259,9 +242,7 @@ def stylize(
                         )
 
                         # 3
-                        original_yuv = np.array(
-                            Image.fromarray(original_image.astype(np.uint8)).convert("YCbCr")
-                        )
+                        original_yuv = np.array(Image.fromarray(original_image.astype(np.uint8)).convert("YCbCr"))
 
                         # 4
                         w, h, _ = original_image.shape
@@ -304,8 +285,8 @@ def hms(seconds):
     minutes = (seconds // 60) % 60
     seconds = seconds % 60
     if hours > 0:
-        return "%d hr %d min" % (hours, minutes)
+        return f"{hours:d} hr {minutes:d} min"
     elif minutes > 0:
-        return "%d min %d sec" % (minutes, seconds)
+        return f"{minutes:d} min {seconds:d} sec"
     else:
-        return "%d sec" % seconds
+        return f"{seconds:d} sec"

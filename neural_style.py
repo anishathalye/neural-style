@@ -1,16 +1,15 @@
 # Copyright (c) Anish Athalye. Released under GPLv3.
 
-import os
 import math
+import os
 import re
 from argparse import ArgumentParser
 from collections import OrderedDict
 
-from PIL import Image
 import numpy as np
+from PIL import Image
 
 from stylize import stylize
-
 
 # default arguments
 CONTENT_WEIGHT = 5e0
@@ -30,9 +29,7 @@ POOLING = "max"
 
 def build_parser():
     parser = ArgumentParser()
-    parser.add_argument(
-        "--content", dest="content", help="content image", metavar="CONTENT", required=True
-    )
+    parser.add_argument("--content", dest="content", help="content image", metavar="CONTENT", required=True)
     parser.add_argument(
         "--styles",
         dest="styles",
@@ -41,9 +38,7 @@ def build_parser():
         metavar="STYLE",
         required=True,
     )
-    parser.add_argument(
-        "--output", dest="output", help="output path", metavar="OUTPUT", required=True
-    )
+    parser.add_argument("--output", dest="output", help="output path", metavar="OUTPUT", required=True)
     parser.add_argument(
         "--iterations",
         type=int,
@@ -62,7 +57,7 @@ def build_parser():
     parser.add_argument(
         "--checkpoint-output",
         dest="checkpoint_output",
-        help="checkpoint output format, e.g. output_{:05}.jpg or " "output_%%05d.jpg",
+        help="checkpoint output format, e.g. output_{:05}.jpg or output_%%05d.jpg",
         metavar="OUTPUT",
         default=None,
     )
@@ -108,7 +103,7 @@ def build_parser():
         "--content-weight-blend",
         type=float,
         dest="content_weight_blend",
-        help="content weight blend, conv4_2 * blend + conv5_2 * (1-blend) " "(default %(default)s)",
+        help="content weight blend, conv4_2 * blend + conv5_2 * (1-blend) (default %(default)s)",
         metavar="CONTENT_WEIGHT_BLEND",
         default=CONTENT_WEIGHT_BLEND,
     )
@@ -200,7 +195,7 @@ def build_parser():
         "--preserve-colors",
         action="store_true",
         dest="preserve_colors",
-        help="style-only transfer (preserving colors) - if color transfer " "is not needed",
+        help="style-only transfer (preserving colors) - if color transfer is not needed",
     )
     parser.add_argument(
         "--pooling",
@@ -224,7 +219,7 @@ def fmt_imsave(fmt, iteration):
     elif "%" in fmt:
         return fmt % iteration
     else:
-        raise ValueError("illegal format string '{}'".format(fmt))
+        raise ValueError(f"illegal format string '{fmt}'")
 
 
 def main():
@@ -237,20 +232,17 @@ def main():
     options = parser.parse_args()
 
     if not os.path.isfile(options.network):
-        parser.error(
-            "Network %s does not exist. (Did you forget to " "download it?)" % options.network
-        )
+        parser.error(f"Network {options.network} does not exist. (Did you forget to download it?)")
 
     if [options.checkpoint_iterations, options.checkpoint_output].count(None) == 1:
-        parser.error("use either both of checkpoint_output and " "checkpoint_iterations or neither")
+        parser.error("use either both of checkpoint_output and checkpoint_iterations or neither")
 
-    if options.checkpoint_output is not None:
-        if re.match(r"^.*(\{.*\}|%.*).*$", options.checkpoint_output) is None:
-            parser.error(
-                "To save intermediate images, the checkpoint_output "
-                "parameter must contain placeholders (e.g. "
-                "`foo_{}.jpg` or `foo_%d.jpg`"
-            )
+    if options.checkpoint_output is not None and re.match(r"^.*(\{.*\}|%.*).*$", options.checkpoint_output) is None:
+        parser.error(
+            "To save intermediate images, the checkpoint_output "
+            "parameter must contain placeholders (e.g. "
+            "`foo_{}.jpg` or `foo_%d.jpg`"
+        )
 
     content_image = imread(options.content)
     style_images = [imread(style) for style in options.styles]
@@ -267,9 +259,7 @@ def main():
         style_scale = STYLE_SCALE
         if options.style_scales is not None:
             style_scale = options.style_scales[i]
-        style_images[i] = imresize(
-            style_images[i], style_scale * target_shape[1] / style_images[i].shape[1]
-        )
+        style_images[i] = imresize(style_images[i], style_scale * target_shape[1] / style_images[i].shape[1])
 
     style_blend_weights = options.style_blend_weights
     if style_blend_weights is None:
@@ -295,17 +285,13 @@ def main():
 
     # try saving a dummy image to the output path to make sure that it's writable
     if os.path.isfile(options.output) and not options.overwrite:
-        raise IOError(
-            "%s already exists, will not replace it without "
-            "the '--overwrite' flag" % options.output
-        )
+        raise OSError(f"{options.output} already exists, will not replace it without the '--overwrite' flag")
     try:
         imsave(options.output, np.zeros((500, 500, 3)))
-    except:
-        raise IOError(
-            "%s is not writable or does not have a valid file "
-            "extension for an image file" % options.output
-        )
+    except Exception as err:
+        raise OSError(
+            f"{options.output} is not writable or does not have a valid file extension for an image file"
+        ) from err
 
     loss_arrs = None
     for iteration, image, loss_vals in stylize(
@@ -335,7 +321,7 @@ def main():
         if (loss_vals is not None) and (options.progress_plot or options.progress_write):
             if loss_arrs is None:
                 itr = []
-                loss_arrs = OrderedDict((key, []) for key in loss_vals.keys())
+                loss_arrs = OrderedDict((key, []) for key in loss_vals)
             for key, val in loss_vals.items():
                 loss_arrs[key].append(val)
             itr.append(iteration)
@@ -343,7 +329,7 @@ def main():
     imsave(options.output, image)
 
     if options.progress_write:
-        fn = "{}/progress.txt".format(os.path.dirname(options.output))
+        fn = f"{os.path.dirname(options.output)}/progress.txt"
         tmp = np.empty((len(itr), len(loss_arrs) + 1), dtype=float)
         tmp[:, 0] = np.array(itr)
         for ii, val in enumerate(loss_arrs.values()):
@@ -362,7 +348,7 @@ def main():
         ax.legend()
         ax.set_xlabel("iterations")
         ax.set_ylabel("loss")
-        fig.savefig("{}/progress.png".format(os.path.dirname(options.output)))
+        fig.savefig(f"{os.path.dirname(options.output)}/progress.png")
 
 
 def imread(path):
