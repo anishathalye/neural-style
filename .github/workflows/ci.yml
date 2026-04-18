@@ -6,24 +6,24 @@ on:
     - cron: '0 8 * * 6'
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Test
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.0.0
       - run: wget --no-check-certificate https://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-19.mat
       - run: uv run neural_style.py --content examples/1-content.jpg --styles examples/1-style.jpg --output test-$(date +%s).png --iterations 2
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.0.0
       - run: uv run ruff check
   fmt:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.0.0
       - run: uv run ruff format --check
